@@ -1,0 +1,50 @@
+services:
+  parakeet:
+    image: ghcr.io/achetronic/parakeet:latest
+    ports:
+      # Loopback-only: Docker's port publishing bypasses host firewall rules,
+      # and this server has no auth configured.
+      - "127.0.0.1:5092:5092"
+    volumes:
+      # Weights are not baked into the image and are not fetched at startup —
+      # `make download-models` must populate this directory first or the server exits.
+      # create_host_path:false makes Compose fail loudly when the directory is
+      # missing. The default silently creates it as root, which then blocks
+      # `make download-models` from writing the weights in as an unprivileged user.
+      - type: bind
+        source: ./.cache/models
+        target: /models
+        read_only: true
+        bind:
+          create_host_path: false
+    environment:
+      PARAKEET_MODELS: /models
+      PARAKEET_GPU: cpu
+      # One worker, because asr.transcribe sends chunks sequentially — a second
+      # would hold ~2 GB idle. ONNX Runtime already parallelises a single
+      # inference across cores, so extra workers contend rather than speed
+      # things up. Raise this only together with a concurrent client.
+      PARAKEET_WORKERS: "1"
+      # The encoder caps at 400 s per pass; long-audio mode splits on VAD
+      # boundaries and de-duplicates the seams instead of hard-cutting.
+      PARAKEET_LONG_AUDIO: "true"
+      PARAKEET_FFMPEG: "true"
+      PARAKEET_LOG_LEVEL: info
+    restart: unless-stopped
+    healthcheck:
+      # The image ships no curl and no wget, so the old probe could never run and
+      # the container reported "unhealthy" for its whole life. bash is present,
+      # and /dev/tcp reaches /health without adding a package.
+      test:
+        - CMD
+        - bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/5092;
+          printf 'GET /health HTTP/1.0\r\n\r\n' >&3;
+          read -r status <&3;
+          [[ $$status == *200* ]]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 60s
