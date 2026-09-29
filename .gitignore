@@ -1,0 +1,21 @@
+# Downloaded media, ONNX weights, OAuth tokens and derived artifacts.
+.cache/
+
+# Secrets. Google credential downloads are named after the project, so match
+# broadly rather than trusting any single filename pattern.
+.env
+client_secret*.json
+*-[0-9][0-9][0-9][0-9][0-9][0-9]-*.json
+service-account*.json
+*credentials*.json
+google_token.json
+
+# Per-run logs. Useful locally, never worth committing.
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
