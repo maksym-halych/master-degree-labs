@@ -70,7 +70,9 @@ def _envelope(**fields: Any) -> str:
     return json.dumps({"type": "result", "is_error": False, **fields})
 
 
-def test_summary_is_read_from_the_json_envelope(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_summary_is_read_from_the_json_envelope(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """The backend returns the envelope's result, not the raw stdout."""
     run, _ = _fake_run(_envelope(result="# Лекція\n## TL;DR\nПро пошук.\n"))
     monkeypatch.setattr(subprocess, "run", run)
