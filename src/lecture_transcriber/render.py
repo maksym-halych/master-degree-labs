@@ -3,7 +3,9 @@
 import json
 import logging
 import re
+import subprocess
 import unicodedata
+from functools import cache
 from pathlib import Path
 
 from lecture_transcriber.models import LectureSource, Transcript
@@ -42,6 +44,43 @@ def _safe_component(name: str) -> str:
     cleaned = encoded.decode("utf-8", errors="ignore").strip()
 
     return cleaned or "untitled"
+
+
+@cache
+def pipeline_revision() -> str | None:
+    """
+    Identify the code revision that produced an artifact.
+
+    A `-dirty` suffix marks uncommitted changes in the working tree, so an
+    artifact can never be attributed to a commit that does not describe it.
+
+    Returns:
+        The commit hash, or None when the pipeline runs outside a git checkout
+        or git is unavailable.
+    """
+    repo = Path(__file__).resolve().parent
+
+    def _git(*args: str) -> str | None:
+        try:
+            result = subprocess.run(
+                ("git", "-C", str(repo), *args),
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+        except OSError, subprocess.SubprocessError:
+            return None
+        return result.stdout.strip() if result.returncode == 0 else None
+
+    revision = _git("rev-parse", "HEAD")
+    if revision is None:
+        log.warning("no git revision available; artifact provenance will omit it")
+        return None
+
+    # An empty diff means the checkout matches HEAD; None means the check itself
+    # failed, which is not evidence of cleanliness.
+    dirty = _git("status", "--porcelain")
+    return revision if dirty == "" else f"{revision}-dirty"
 
 
 def artifact_dir(source: LectureSource, docs_dir: Path) -> Path:
@@ -121,6 +160,7 @@ def _common_fields(
         "language": transcript.language,
         "asr_model": "parakeet-tdt-0.6b-v3",
         "summary_model": settings_model,
+        "pipeline_revision": pipeline_revision(),
         # Below 1.0 means the ASR server returned no speech for part of the audio.
         "transcript_coverage": round(
             transcript.covered_seconds / transcript.duration

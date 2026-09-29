@@ -1,12 +1,19 @@
 """Tests for artifact layout, path sanitisation and frontmatter."""
 
+import re
+import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
 
 from lecture_transcriber.models import LectureSource, Segment, Transcript
-from lecture_transcriber.render import _safe_component, artifact_dir, write_artifacts
+from lecture_transcriber.render import (
+    _safe_component,
+    artifact_dir,
+    pipeline_revision,
+    write_artifacts,
+)
 
 _FOLDERS = (
     "Lecture-Recordings-mKNSSH-2026",
@@ -153,6 +160,36 @@ def test_transcript_segments_are_timestamped_and_separated(tmp_path: Path) -> No
     body = transcript_path.read_text(encoding="utf-8")
     assert "**[00:00:00]** Доброго дня." in body
     assert "**[01:00:12]** Приклад:" in body
+
+
+def test_pipeline_revision_is_recorded(tmp_path: Path) -> None:
+    """The artifact names the code revision that produced it."""
+    summary_path, transcript_path = write_artifacts(
+        "# x\n", _transcript(), _source(), tmp_path / "docs", "claude-opus-4-8"
+    )
+    for path in (summary_path, transcript_path):
+        block = path.read_text(encoding="utf-8").split("---")[1]
+        assert yaml.safe_load(block)["pipeline_revision"] == pipeline_revision()
+
+
+def test_pipeline_revision_flags_an_uncommitted_tree() -> None:
+    """A hash alone would misattribute artifacts built from unstaged edits."""
+    revision = pipeline_revision()
+    assert revision is not None  # the test suite runs from a git checkout
+    base = revision.removesuffix("-dirty")
+    assert re.fullmatch(r"[0-9a-f]{40}", base)
+
+    dirty = (
+        subprocess.run(
+            ("git", "status", "--porcelain"),
+            cwd=Path(__file__).resolve().parent,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        != ""
+    )
+    assert revision.endswith("-dirty") is dirty
 
 
 def test_drive_path_joins_folders_and_name() -> None:
