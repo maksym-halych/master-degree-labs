@@ -76,7 +76,7 @@ LATEXMK := latexmk -lualatex -shell-escape -interaction=nonstopmode -halt-on-err
 #
 # Every path component is derived in the shell, never with Make's $(dir)/$(notdir):
 # those split on whitespace, and these paths are full of spaces.
-render-report: ## Render the report at REPORT (from .env) into docs/reports/
+render-report: ## Render the report at REPORT (from .env) into docs/Reports/
 	@set -e; \
 	src="$(REPORT)"; src="$${src%/}"; \
 	[ -n "$$src" ] || { echo "REPORT is unset. Set it in .env, or pass REPORT=<dir holding main.tex>"; exit 1; }; \
@@ -88,8 +88,8 @@ render-report: ## Render the report at REPORT (from .env) into docs/reports/
 	stem="$$(printf '%s' "$$name" | sed 's/[0-9]*$$//')"; \
 	num="$$(printf '%s' "$$name" | sed 's/^[^0-9]*//')"; \
 	title="$$(printf '%s' "$$stem" | sed 's/^./\U&/')$${num:+ $$num}"; \
-	out="$$root/docs/reports/$$term/$$subject"; \
+	out="$$root/docs/Reports/$$term/$$subject"; \
 	( cd "$$src" && $(LATEXMK) -outdir=build -jobname="$$name" main.tex ); \
 	mkdir -p "$$out"; \
 	cp "$$src/build/$$name.pdf" "$$out/$(DATE) - $$title.pdf"; \
-	echo "wrote docs/reports/$$term/$$subject/$(DATE) - $$title.pdf"
+	echo "wrote docs/Reports/$$term/$$subject/$(DATE) - $$title.pdf"

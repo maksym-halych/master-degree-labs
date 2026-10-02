@@ -20,5 +20,6 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-docs/reports/
+docs/Reports/
+docs/Methodological-Guidelines/
 build/
