@@ -1,10 +1,7 @@
 """Produces every artifact of the lab 2 report (PyTorch).
 
-RUN — from the workspace root, with REPORT pointing at this directory:
-
-    make run-lab REPORT="src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології/lab2"
-
-With REPORT set in .env, `make run-lab` on its own does the same. Without make:
+RUN — from the workspace root. `--project` points uv at the subject directory,
+which holds the pyproject.toml pinning this lab's interpreter:
 
     uv run --project "src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології" \
         python "src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології/lab2/run.py"
@@ -54,7 +51,7 @@ def main() -> int:
     # become known at the very end, after several minutes of work.
     if not LAB1_METRICS.exists():
         log.error("No lab 1 metrics at: %s", LAB1_METRICS)
-        log.error("Run lab 1 first: make run-lab REPORT=<...>/lab1")
+        log.error("Run lab 1 first: its run.py, from the workspace root")
         return 1
 
     for title, run, expected in STAGES:

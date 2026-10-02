@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 .PHONY: help run download-models pre-commit
-.PHONY: render-report run-lab
+.PHONY: render-report
 
 CACHE_DIR   := ./.cache
 MODELS_DIR  := $(CACHE_DIR)/models
@@ -43,9 +43,10 @@ pre-commit: ## Run every pre-commit hook over the tree
 	uv run --directory $(PROJECT) pre-commit run --all-files
 
 # --- Lab reports -----------------------------------------------------------
-# No subject is named anywhere below. render-report derives everything from
-# REPORT, and producing artifacts is each lab's own run.py, so neither a new
-# subject nor a new lab needs a change in this file.
+# No subject is named anywhere below: render-report derives everything from
+# REPORT, so neither a new subject nor a new lab needs a change in this file.
+# Producing a lab's artifacts is its own run.py, launched directly — see its
+# module docstring for the command.
 #
 # Subject paths hold spaces and Cyrillic. GNU Make splits targets, prerequisites
 # and $(dir)/$(notdir) on whitespace, so such a path can be none of those: it
@@ -66,23 +67,6 @@ DATE ?= $(shell date +%F)
 # halts on the Cyrillic in the sources (figure labels in the code listings, and
 # the report prose itself) — see preamble.tex.
 LATEXMK := latexmk -lualatex -shell-escape -interaction=nonstopmode -halt-on-error -file-line-error
-
-# A lab's artifacts are produced by its own run.py, which declares the stages and
-# the outputs; run-lab below only locates and launches it. Both operations are
-# uniform across every report, so both live here and neither names a subject.
-#
-# run.py derives every path from __file__, so it does not care where it is run
-# from — but its interpreter does: the subject directory holds the pyproject.toml
-# that pins it, hence `--project "$$subject"`. Nothing here is relative to the
-# working directory, so unlike the lecture-transcriber `run` target above this is
-# safe to invoke from anywhere.
-run-lab: ## Produce the artifacts for the lab at REPORT (from .env)
-	@set -e; \
-	src="$(REPORT)"; src="$${src%/}"; \
-	[ -n "$$src" ] || { echo "REPORT is unset. Set it in .env, or pass REPORT=<dir holding run.py>"; exit 1; }; \
-	[ -f "$$src/run.py" ] || { echo "no run.py in '$$src'"; exit 1; }; \
-	subject="$$(dirname "$$src")"; \
-	uv run --project "$$subject" python "$$src/run.py"
 
 # The report is the deliverable, so it lands in docs/; only the LaTeX scratch
 # files stay next to the source, in build/. Term, subject and report name all

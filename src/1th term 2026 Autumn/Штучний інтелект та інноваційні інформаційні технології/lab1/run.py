@@ -1,10 +1,7 @@
 """Produces every artifact of the lab 1 report (TensorFlow).
 
-RUN — from the workspace root, with REPORT pointing at this directory:
-
-    make run-lab REPORT="src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології/lab1"
-
-With REPORT set in .env, `make run-lab` on its own does the same. Without make:
+RUN — from the workspace root. `--project` points uv at the subject directory,
+which holds the pyproject.toml pinning this lab's interpreter:
 
     uv run --project "src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології" \
         python "src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології/lab1/run.py"
