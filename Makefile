@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 .PHONY: help run download-models pre-commit
-.PHONY: render-report
+.PHONY: render-report run-lab
 
 CACHE_DIR   := ./.cache
 MODELS_DIR  := $(CACHE_DIR)/models
@@ -63,13 +63,27 @@ REPORT ?= $(shell sed -n 's/^[[:space:]]*REPORT=//p' .env 2>/dev/null | tail -1)
 DATE ?= $(shell date +%F)
 
 # -lualatex, not -pdf: under pdfLaTeX the listings package cannot read UTF-8 and
-# halts on the Cyrillic comments in the code listings (see preamble.tex).
+# halts on the Cyrillic in the sources (figure labels in the code listings, and
+# the report prose itself) — see preamble.tex.
 LATEXMK := latexmk -lualatex -shell-escape -interaction=nonstopmode -halt-on-error -file-line-error
 
-# Producing a report's artifacts is not a make target: each lab owns a run.py
-# that declares its own stages and outputs (see lab*/run.py for how to run it).
-# Rendering is the one operation uniform across every report, so it lives here.
+# A lab's artifacts are produced by its own run.py, which declares the stages and
+# the outputs; run-lab below only locates and launches it. Both operations are
+# uniform across every report, so both live here and neither names a subject.
 #
+# run.py derives every path from __file__, so it does not care where it is run
+# from — but its interpreter does: the subject directory holds the pyproject.toml
+# that pins it, hence `--project "$$subject"`. Nothing here is relative to the
+# working directory, so unlike the lecture-transcriber `run` target above this is
+# safe to invoke from anywhere.
+run-lab: ## Produce the artifacts for the lab at REPORT (from .env)
+	@set -e; \
+	src="$(REPORT)"; src="$${src%/}"; \
+	[ -n "$$src" ] || { echo "REPORT is unset. Set it in .env, or pass REPORT=<dir holding run.py>"; exit 1; }; \
+	[ -f "$$src/run.py" ] || { echo "no run.py in '$$src'"; exit 1; }; \
+	subject="$$(dirname "$$src")"; \
+	uv run --project "$$subject" python "$$src/run.py"
+
 # The report is the deliverable, so it lands in docs/; only the LaTeX scratch
 # files stay next to the source, in build/. Term, subject and report name all
 # come from where REPORT sits, so a new subject needs no change here.
