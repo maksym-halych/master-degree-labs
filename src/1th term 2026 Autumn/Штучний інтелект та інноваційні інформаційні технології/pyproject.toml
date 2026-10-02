@@ -11,6 +11,7 @@ dependencies = [
     "numpy>=1.26,<2.2",
     "matplotlib>=3.9",
     "seaborn>=0.13",
+    "pillow>=11",
 ]
 
 # Робить пакет aiit встановлюваним, тому lab*/run.py імпортують `from aiit...`

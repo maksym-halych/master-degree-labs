@@ -19,6 +19,7 @@ from sklearn.preprocessing import StandardScaler
 
 from aiit.config import EDA, SEED
 from aiit.data import load_raw, target_bins
+from aiit.figures import save_figure
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ def feature_distributions(X, y) -> None:
 
     fig.suptitle("Розподіл ознак та цільової змінної")
     fig.tight_layout()
-    fig.savefig(OUT / "distributions.png", bbox_inches="tight")
+    save_figure(fig, OUT / "distributions.png")
     plt.close(fig)
 
 
@@ -61,7 +62,7 @@ def correlation(X, y) -> dict:
     )
     ax.set_title("Кореляційна матриця")
     fig.tight_layout()
-    fig.savefig(OUT / "correlation.png", bbox_inches="tight")
+    save_figure(fig, OUT / "correlation.png")
     plt.close(fig)
 
     return corr["MedHouseVal"].drop("MedHouseVal").to_dict()
@@ -97,7 +98,7 @@ def target_imbalance(y) -> dict:
     axes[1].legend(fontsize=8)
 
     fig.tight_layout()
-    fig.savefig(OUT / "target_imbalance.png", bbox_inches="tight")
+    save_figure(fig, OUT / "target_imbalance.png")
     plt.close(fig)
 
     return {
@@ -140,7 +141,7 @@ def pca_and_tsne(X, y) -> dict:
     fig.colorbar(sc, ax=axes[1], label="MedHouseVal")
 
     fig.tight_layout()
-    fig.savefig(OUT / "pca_tsne.png", bbox_inches="tight")
+    save_figure(fig, OUT / "pca_tsne.png")
     plt.close(fig)
 
     return {

@@ -8,6 +8,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+from aiit.figures import save_figure
+
 plt.rcParams.update(
     {
         "figure.dpi": 150,
@@ -36,8 +38,7 @@ def learning_curves(histories: dict[str, dict], outpath: Path, title: str) -> No
 
     fig.suptitle(title)
     fig.tight_layout()
-    outpath.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(outpath, bbox_inches="tight")
+    save_figure(fig, outpath)
     plt.close(fig)
 
 
@@ -57,8 +58,7 @@ def overfit_gap(histories: dict[str, dict], outpath: Path, title: str) -> None:
     ax.legend(fontsize=8)
 
     fig.tight_layout()
-    outpath.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(outpath, bbox_inches="tight")
+    save_figure(fig, outpath)
     plt.close(fig)
 
 
@@ -76,8 +76,7 @@ def predicted_vs_actual(y_true, y_pred, outpath: Path, title: str) -> None:
     ax.set_title(title)
 
     fig.tight_layout()
-    outpath.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(outpath, bbox_inches="tight")
+    save_figure(fig, outpath)
     plt.close(fig)
 
 
@@ -125,6 +124,5 @@ def framework_comparison(tf_results: dict, pt_results: dict, outpath: Path) -> N
         ax.legend()
 
     fig.tight_layout()
-    outpath.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(outpath, bbox_inches="tight")
+    save_figure(fig, outpath)
     plt.close(fig)
