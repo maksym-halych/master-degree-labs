@@ -1,4 +1,8 @@
-"""Побудова навчальних кривих та графіків результатів (завдання 10)."""
+"""Learning curves and result plots (task 10).
+
+Titles, axis labels and legends stay in Ukrainian: they are report content,
+read off the rendered figure, not code the reader of this module has to follow.
+"""
 
 from pathlib import Path
 
@@ -21,7 +25,7 @@ plt.rcParams.update(
 
 
 def learning_curves(histories: dict[str, dict], outpath: Path, title: str) -> None:
-    """Криві train/val loss для всіх конфігурацій моделі на одному рисунку."""
+    """Train/val loss curves for every model configuration on one figure."""
     fig, axes = plt.subplots(1, 2, figsize=(11, 4))
 
     for name, hist in histories.items():
@@ -43,7 +47,7 @@ def learning_curves(histories: dict[str, dict], outpath: Path, title: str) -> No
 
 
 def overfit_gap(histories: dict[str, dict], outpath: Path, title: str) -> None:
-    """Різниця val_loss - train_loss: пряма діагностика перенавчання (завдання 12)."""
+    """The val_loss - train_loss difference: overfitting read off directly (task 12)."""
     fig, ax = plt.subplots(figsize=(7, 4))
 
     for name, hist in histories.items():
@@ -63,7 +67,7 @@ def overfit_gap(histories: dict[str, dict], outpath: Path, title: str) -> None:
 
 
 def predicted_vs_actual(y_true, y_pred, outpath: Path, title: str) -> None:
-    """Діаграма розсіювання прогноз/факт для найкращої моделі."""
+    """Predicted/actual scatter plot for the best model."""
     fig, ax = plt.subplots(figsize=(5.5, 5.5))
     ax.scatter(y_true, y_pred, s=4, alpha=0.25, edgecolors="none")
 
@@ -81,7 +85,7 @@ def predicted_vs_actual(y_true, y_pred, outpath: Path, title: str) -> None:
 
 
 def framework_comparison(tf_results: dict, pt_results: dict, outpath: Path) -> None:
-    """Стовпчикова діаграма RMSE та часу навчання: TensorFlow проти PyTorch."""
+    """Bar chart of RMSE and training time: TensorFlow against PyTorch."""
     names = [k for k in tf_results if k in pt_results]
     x = np.arange(len(names))
     width = 0.38

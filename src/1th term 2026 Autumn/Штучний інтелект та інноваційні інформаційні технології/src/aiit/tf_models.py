@@ -1,7 +1,7 @@
-"""Архітектури нейронних мереж у TensorFlow/Keras (завдання 6-7).
+"""Neural network architectures in TensorFlow/Keras (tasks 6-7).
 
-TF_CPP_MIN_LOG_LEVEL виставляє пакет aiit (див. __init__.py) — до будь-якого
-`import tensorflow`, бо тут було б уже запізно.
+TF_CPP_MIN_LOG_LEVEL is set by the aiit package (see __init__.py) — before any
+`import tensorflow`, because here it would already be too late.
 """
 
 import tensorflow as tf
@@ -18,7 +18,7 @@ from aiit.config import (
 
 
 def build_baseline(input_dim: int, activation: str) -> keras.Model:
-    """Базова feedforward мережа: два приховані шари, без регуляризації."""
+    """Baseline feedforward network: two hidden layers, no regularization."""
     return keras.Sequential(
         [
             keras.Input(shape=(input_dim,)),
@@ -31,10 +31,10 @@ def build_baseline(input_dim: int, activation: str) -> keras.Model:
 
 
 def build_regularized(input_dim: int, activation: str) -> keras.Model:
-    """Ускладнена мережа: Dropout + Batch Normalization + L2-регуляризація.
+    """Extended network: Dropout + Batch Normalization + L2 regularization.
 
-    BatchNormalization ставимо перед активацією, тому Dense-шар лишається
-    лінійним, а активація виноситься окремим шаром.
+    BatchNormalization goes before the activation, which keeps the Dense layer
+    linear and moves the activation out into a layer of its own.
     """
     reg = regularizers.l2(L2_LAMBDA)
     model = keras.Sequential(name=f"regularized_{activation}")
@@ -60,7 +60,7 @@ def compile_model(model: keras.Model) -> keras.Model:
 
 
 def all_models(input_dim: int) -> dict[str, keras.Model]:
-    """Чотири конфігурації: 2 архітектури × 2 функції активації."""
+    """Four configurations: 2 architectures × 2 activation functions."""
     models: dict[str, keras.Model] = {}
     for activation in ACTIVATIONS:
         models[f"baseline-{activation}"] = compile_model(
@@ -73,6 +73,6 @@ def all_models(input_dim: int) -> dict[str, keras.Model]:
 
 
 def set_seed(seed: int) -> None:
-    """Фіксує генератор TensorFlow. Окрема функція, щоб виклик лишався
-    в модулі, який уже імпортував tensorflow."""
+    """Seeds the TensorFlow generator. A separate function so that the call stays
+    in the module that has already imported tensorflow."""
     tf.random.set_seed(seed)

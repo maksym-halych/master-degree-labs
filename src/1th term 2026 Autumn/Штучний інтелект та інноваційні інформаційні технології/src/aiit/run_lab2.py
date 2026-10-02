@@ -1,7 +1,10 @@
-"""Лабораторна робота №2: експерименти у PyTorch (завдання 6-11).
+"""Lab 2: the PyTorch experiments (tasks 6-11).
 
-Повторює експерименти лабораторної роботи №1 засобами PyTorch і додатково
-формує порівняння двох фреймворків.
+Repeats the lab 1 experiments with PyTorch and additionally builds the
+comparison of the two frameworks.
+
+The figure titles passed to aiit.plots stay in Ukrainian: they are rendered into
+the figures the report shows.
 """
 
 import json
@@ -31,7 +34,7 @@ LAB1_METRICS = LAB1 / "lab1.json"
 
 
 def set_seeds() -> None:
-    """Фіксує всі три генератори випадкових чисел перед кожним навчанням."""
+    """Seeds all three random number generators before every training run."""
     random.seed(SEED)
     np.random.seed(SEED)
     torch.manual_seed(SEED)
@@ -45,14 +48,14 @@ def make_loader(X: np.ndarray, y: np.ndarray, shuffle: bool) -> DataLoader:
 
 @torch.no_grad()
 def evaluate(model: nn.Module, X: np.ndarray) -> np.ndarray:
-    """Прогноз у режимі eval: Dropout вимкнено, BatchNorm використовує
-    накопичені статистики, а не статистики поточного батчу."""
+    """Prediction in eval mode: Dropout is off and BatchNorm uses its running
+    statistics rather than those of the current batch."""
     model.eval()
     return model(torch.from_numpy(X)).numpy()
 
 
 def train_one(model: nn.Module, weight_decay: float, ds: dict) -> tuple[dict, float]:
-    """Ручний цикл навчання — на відміну від Keras, PyTorch не має .fit()."""
+    """A manual training loop — unlike Keras, PyTorch has no .fit()."""
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(
         model.parameters(), lr=LEARNING_RATE, weight_decay=weight_decay
@@ -87,11 +90,11 @@ def train_one(model: nn.Module, weight_decay: float, ds: dict) -> tuple[dict, fl
 
 
 def run_pytorch_experiments() -> None:
-    """Навчає всі конфігурації, зберігає метрики, рисунки та порівняння.
+    """Trains every configuration and writes the metrics, figures and comparison.
 
     Raises:
-        FileNotFoundError: Якщо метрик ЛР №1 немає — без них неможливо
-            побудувати порівняння фреймворків, яке вимагає звіт ЛР №2.
+        FileNotFoundError: If the lab 1 metrics are missing — without them the
+            framework comparison the lab 2 report requires cannot be built.
     """
     if not LAB1_METRICS.exists():
         raise FileNotFoundError(LAB1_METRICS)
@@ -102,7 +105,7 @@ def run_pytorch_experiments() -> None:
     ds = prepare()
     input_dim = ds["X_train"].shape[1]
     log.info(
-        "Ознак: %d; train=%d, val=%d, test=%d",
+        "Features: %d; train=%d, val=%d, test=%d",
         input_dim,
         len(ds["X_train"]),
         len(ds["X_val"]),
@@ -133,7 +136,7 @@ def run_pytorch_experiments() -> None:
 
         r = results[name]
         log.info(
-            "RMSE(test)=%.4f  R2(test)=%.4f  час=%.1f с  параметрів=%d",
+            "RMSE(test)=%.4f  R2(test)=%.4f  time=%.1f s  params=%d",
             r["test"]["rmse"],
             r["test"]["r2"],
             elapsed,
@@ -155,8 +158,9 @@ def run_pytorch_experiments() -> None:
         f"PyTorch, найкраща модель: {best}",
     )
 
-    # Порівняння фреймворків (завдання 11) — рисунок обов'язковий для звіту,
-    # тому відсутність метрик ЛР №1 зупиняє запуск ще на початку функції.
+    # The framework comparison (task 11) — the figure is mandatory for the
+    # report, which is why missing lab 1 metrics stop the run at the very top
+    # of this function.
     tf_results = json.loads(LAB1_METRICS.read_text(encoding="utf-8"))["results"]
     framework_comparison(tf_results, results, LAB2 / "framework_comparison.png")
 
@@ -174,4 +178,4 @@ def run_pytorch_experiments() -> None:
         ),
         encoding="utf-8",
     )
-    log.info("Найкраща модель: %s", best)
+    log.info("Best model: %s", best)

@@ -1,7 +1,10 @@
-"""Лабораторна робота №1: експерименти у TensorFlow (завдання 6-10).
+"""Lab 1: the TensorFlow experiments (tasks 6-10).
 
-Навчає чотири конфігурації моделей, зберігає метрики lab1.json та рисунки
-у теці артефактів (config.LAB1).
+Trains four model configurations and writes the lab1.json metrics and the
+figures into the artifact directory (config.LAB1).
+
+The figure titles passed to aiit.plots stay in Ukrainian: they are rendered into
+the figures the report shows.
 """
 
 import json
@@ -21,20 +24,20 @@ log = logging.getLogger(__name__)
 
 
 def set_seeds() -> None:
-    """Фіксує всі три генератори випадкових чисел перед кожним навчанням."""
+    """Seeds all three random number generators before every training run."""
     random.seed(SEED)
     np.random.seed(SEED)
     set_seed(SEED)
 
 
 def run_tensorflow_experiments() -> None:
-    """Навчає всі конфігурації, зберігає метрики та рисунки ЛР №1."""
+    """Trains every configuration and writes the lab 1 metrics and figures."""
     set_seeds()
 
     ds = prepare()
     input_dim = ds["X_train"].shape[1]
     log.info(
-        "Ознак: %d; train=%d, val=%d, test=%d",
+        "Features: %d; train=%d, val=%d, test=%d",
         input_dim,
         len(ds["X_train"]),
         len(ds["X_val"]),
@@ -78,7 +81,7 @@ def run_tensorflow_experiments() -> None:
 
         r = results[name]
         log.info(
-            "RMSE(test)=%.4f  R2(test)=%.4f  час=%.1f с  параметрів=%d",
+            "RMSE(test)=%.4f  R2(test)=%.4f  time=%.1f s  params=%d",
             r["test"]["rmse"],
             r["test"]["r2"],
             elapsed,
@@ -117,4 +120,4 @@ def run_tensorflow_experiments() -> None:
         ),
         encoding="utf-8",
     )
-    log.info("Найкраща модель: %s", best)
+    log.info("Best model: %s", best)

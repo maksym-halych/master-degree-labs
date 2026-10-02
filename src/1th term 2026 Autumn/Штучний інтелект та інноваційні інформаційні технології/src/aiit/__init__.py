@@ -1,13 +1,13 @@
-"""Спільний код лабораторних робіт з дисципліни.
+"""Code shared by the labs of this subject.
 
-Точки входу — скрипти lab*/run.py; тут лежить уся обчислювальна логіка.
+The entry points are the lab*/run.py scripts; all the computation lives here.
 """
 
 import os
 
-# Має бути виставлено до першого `import tensorflow` у будь-якому модулі, інакше
-# TensorFlow встигає надрукувати свої інформаційні повідомлення. Пакет
-# імпортується раніше за будь-який свій модуль, тому це найнадійніше місце:
-# у tf_models.py змінна виставлялася запізно, бо set_seeds() у run_lab1
-# імпортував tensorflow першим.
+# Must be set before the first `import tensorflow` in any module, otherwise
+# TensorFlow has already printed its informational messages. The package is
+# imported ahead of any of its own modules, which makes this the most reliable
+# place: in tf_models.py the variable was set too late, because set_seeds() in
+# run_lab1 imported tensorflow first.
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")

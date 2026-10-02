@@ -1,15 +1,21 @@
-"""Готує всі артефакти звіту ЛР №1 (TensorFlow).
+"""Produces every artifact of the lab 1 report (TensorFlow).
 
-ЗАПУСК — з теки дисципліни (там, де лежить pyproject.toml):
+RUN — from the workspace root, with REPORT pointing at this directory:
 
-    uv run python lab1/run.py
+    make run-lab REPORT="src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології/lab1"
 
-Рисунки й метрики пишуться у .cache/reports-artifacts/<семестр>/<дисципліна>/,
-шлях обчислює aiit.config. Сам PDF цей скрипт не збирає — для цього є
-`make render-report` у корені робочого простору.
+With REPORT set in .env, `make run-lab` on its own does the same. Without make:
 
-Тут лише оркестрація: перелік етапів, журналювання та перевірка, що кожен
-оголошений артефакт справді з'явився. Обчислення живуть у пакеті aiit.
+    uv run --project "src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології" \
+        python "src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології/lab1/run.py"
+
+Every path is derived from __file__, so the working directory does not matter.
+Figures and metrics go to .cache/reports-artifacts/<term>/<subject>/ and the run
+log to logs/<term>/<subject>/lab1/ — both computed by aiit.config. This script
+does not build the PDF; `make render-report` at the workspace root does.
+
+What lives here is orchestration only: the list of stages, logging, and the check
+that every declared artifact really did appear. The computation lives in aiit.
 """
 
 import logging
@@ -17,15 +23,16 @@ import sys
 
 from aiit.config import EDA, LAB1
 from aiit.eda import run_eda
+from aiit.logs import configure_logging
 from aiit.run_lab1 import run_tensorflow_experiments
 
 log = logging.getLogger("lab1")
 
-# Що цей скрипт зобов'язаний залишити на диску. Перевіряється після кожного
-# етапу: мовчазно відсутній рисунок інакше виявиться аж на збірці PDF.
+# What this script is obliged to leave on disk. Checked after every stage: a
+# silently missing figure would otherwise only surface at the PDF build.
 STAGES: tuple[tuple[str, object, tuple], ...] = (
     (
-        "Розвідувальний аналіз даних",
+        "Exploratory data analysis",
         run_eda,
         (
             EDA / "distributions.png",
@@ -36,7 +43,7 @@ STAGES: tuple[tuple[str, object, tuple], ...] = (
         ),
     ),
     (
-        "Експерименти TensorFlow",
+        "TensorFlow experiments",
         run_tensorflow_experiments,
         (
             LAB1 / "learning_curves.png",
@@ -49,29 +56,26 @@ STAGES: tuple[tuple[str, object, tuple], ...] = (
 
 
 def main() -> int:
-    """Виконує етапи по черзі. Повертає код завершення процесу."""
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s  %(levelname)-7s %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
-    )
+    """Runs the stages in order. Returns the process exit code."""
+    log_file = configure_logging("lab1")
+    log.info("Logging to %s", log_file)
 
     for title, run, expected in STAGES:
         log.info("--- %s ---", title)
         try:
             run()
         except Exception:
-            log.exception("Етап «%s» завершився помилкою", title)
+            log.exception("Stage %r failed", title)
             return 1
 
         missing = [p for p in expected if not p.exists()]
         if missing:
             for path in missing:
-                log.error("Етап «%s» не створив артефакт: %s", title, path)
+                log.error("Stage %r did not produce the artifact: %s", title, path)
             return 1
-        log.info("Артефактів перевірено: %d", len(expected))
+        log.info("Artifacts verified: %d", len(expected))
 
-    log.info("Готово. Збірка звіту: make render-report")
+    log.info("Done. Build the report with: make render-report")
     return 0
 
 

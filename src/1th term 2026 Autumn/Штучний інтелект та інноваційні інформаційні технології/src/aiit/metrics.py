@@ -1,4 +1,4 @@
-"""Метрики оцінки якості регресійних моделей (завдання 9)."""
+"""Quality metrics for the regression models (task 9)."""
 
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -7,8 +7,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 def regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     """RMSE / MAE / R2 / MAPE.
 
-    Цільова змінна вимірюється в сотнях тисяч доларів, тому RMSE і MAE
-    інтерпретуються безпосередньо в тих самих одиницях.
+    The target is measured in hundreds of thousands of dollars, so RMSE and MAE
+    are read directly in those same units.
     """
     y_true = np.asarray(y_true, dtype=np.float64).ravel()
     y_pred = np.asarray(y_pred, dtype=np.float64).ravel()

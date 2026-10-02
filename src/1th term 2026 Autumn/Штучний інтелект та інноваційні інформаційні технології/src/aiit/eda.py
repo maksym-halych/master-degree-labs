@@ -1,7 +1,11 @@
-"""Розвідувальний аналіз даних (завдання 3-4).
+"""Exploratory data analysis (tasks 3-4).
 
-Генерує рисунки та зведену статистику eda.json у теці артефактів (config.EDA).
-Рисунки EDA використовує звіт ЛР №1, тому етап належить саме їй.
+Produces the figures and the eda.json summary in the artifact directory
+(config.EDA). The EDA figures are used by the lab 1 report, which is why the
+stage belongs to it.
+
+Figure titles and axis labels stay in Ukrainian: they are report content, read
+off the rendered figure, not code the reader of this module has to follow.
 """
 
 import json
@@ -27,7 +31,7 @@ OUT = EDA
 
 
 def feature_distributions(X, y) -> None:
-    """Гістограми розподілу всіх ознак та цільової змінної."""
+    """Histograms of every feature and of the target."""
     df = X.copy()
     df["MedHouseVal"] = y
 
@@ -44,7 +48,7 @@ def feature_distributions(X, y) -> None:
 
 
 def correlation(X, y) -> dict:
-    """Кореляційна матриця Пірсона."""
+    """Pearson correlation matrix."""
     df = X.copy()
     df["MedHouseVal"] = y
     corr = df.corr()
@@ -69,11 +73,11 @@ def correlation(X, y) -> dict:
 
 
 def target_imbalance(y) -> dict:
-    """Аналіз перекосу розподілу цільової змінної.
+    """Analysis of the skew in the target distribution.
 
-    Задача регресійна, тож класового дисбалансу немає. Натомість аналізуємо
-    два ефекти: перекіс розподілу за квантильними групами та штучне
-    обмеження цільової змінної зверху значенням 5.00001.
+    The task is a regression, so there is no class imbalance. What we analyse
+    instead are two effects: the skew across the quantile groups, and the
+    artificial cap on the target at 5.00001.
     """
     bins = target_bins(y)
     counts = bins.value_counts().sort_index()
@@ -110,7 +114,7 @@ def target_imbalance(y) -> dict:
 
 
 def pca_and_tsne(X, y) -> dict:
-    """PCA (зменшення розмірності) та t-SNE (візуалізація структури)."""
+    """PCA (dimensionality reduction) and t-SNE (structure visualisation)."""
     Xs = StandardScaler().fit_transform(X)
 
     pca_full = PCA(random_state=SEED).fit(Xs)
@@ -125,7 +129,7 @@ def pca_and_tsne(X, y) -> dict:
     axes[0].set_title("PCA: пояснена дисперсія")
     axes[0].legend(fontsize=8)
 
-    # t-SNE на повній вибірці надто повільний — беремо випадкову підвибірку.
+    # t-SNE over the full sample is far too slow — take a random subsample.
     rng = np.random.default_rng(SEED)
     idx = rng.choice(len(Xs), size=3000, replace=False)
     emb = TSNE(
@@ -153,11 +157,11 @@ def pca_and_tsne(X, y) -> dict:
 
 
 def run_eda() -> None:
-    """Виконує всі етапи розвідувального аналізу та зберігає eda.json."""
+    """Runs every stage of the exploratory analysis and writes eda.json."""
     OUT.mkdir(parents=True, exist_ok=True)
 
     X, y = load_raw()
-    log.info("Розмір набору даних: %d записів, %d ознак", X.shape[0], X.shape[1])
+    log.info("Dataset size: %d records, %d features", X.shape[0], X.shape[1])
 
     feature_distributions(X, y)
     corr = correlation(X, y)
@@ -176,4 +180,4 @@ def run_eda() -> None:
     (OUT / "eda.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    log.info("EDA завершено, артефакти: %s", OUT)
+    log.info("EDA finished, artifacts in: %s", OUT)

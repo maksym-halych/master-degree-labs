@@ -1,45 +1,49 @@
-"""Спільні гіперпараметри для обох лабораторних робіт.
+"""Shared hyperparameters for both labs.
 
-Обидва фреймворки імпортують саме ці значення, тому будь-яка різниця
-в результатах TensorFlow і PyTorch походить від фреймворку, а не від
-розбіжності в налаштуваннях експерименту.
+Both frameworks import these exact values, so any difference between the
+TensorFlow and the PyTorch results comes from the framework itself and not
+from a mismatch in the experiment setup.
 """
 
 from pathlib import Path
 
 SEED = 42
 
-# Поділ вибірки: 60 / 20 / 20
+# Sample split: 60 / 20 / 20
 TEST_SIZE = 0.20
-VAL_SIZE = 0.25  # 0.25 від залишку (80%) дає 20% від повного набору
+VAL_SIZE = 0.25  # 0.25 of the remaining 80% yields 20% of the full dataset
 
-# Навчання (завдання 8: 10-20 епох, фіксовані optimizer і learning rate)
+# Training (task 8: 10-20 epochs, fixed optimizer and learning rate)
 EPOCHS = 20
 BATCH_SIZE = 256
 LEARNING_RATE = 1e-3
 L2_LAMBDA = 1e-4
 DROPOUT_RATE = 0.2
 
-# Архітектури (завдання 6)
+# Architectures (task 6)
 HIDDEN_UNITS = (64, 32)
 
-# Активації для порівняння (завдання 7)
+# Activations to compare (task 7)
 ACTIVATIONS = ("relu", "gelu")
 
-# Кількість квантильних груп цільової змінної для аналізу дисбалансу
+# Number of quantile groups of the target used for the imbalance analysis
 TARGET_BINS = 5
 
-# src/aiit/config.py -> src/aiit -> src -> тека дисципліни
+# src/aiit/config.py -> src/aiit -> src -> the subject directory
 ROOT = Path(__file__).resolve().parent.parent.parent
-REPO_ROOT = ROOT.parent.parent.parent  # корінь робочого простору
+REPO_ROOT = ROOT.parent.parent.parent  # the workspace root
 
-# Усі згенеровані артефакти (рисунки, метрики) лежать у .cache/ — спільному
-# для робочого простору дереві проміжних даних, яке не версіонується. Дерево
-# вихідних кодів залишається чистим. Назви семестру й дисципліни беруться
-# з фактичного розташування теки, а не дублюються тут рядком.
-ARTIFACTS = (
-    REPO_ROOT / ".cache" / "reports-artifacts" / ROOT.relative_to(REPO_ROOT / "src")
-)
+# Where this subject sits under src/, e.g. "1th term 2026 Autumn/<subject>".
+# Both the artifact tree and the log tree mirror it, so the term and subject
+# names follow the actual directory layout instead of being duplicated here.
+SUBJECT_PATH = ROOT.relative_to(REPO_ROOT / "src")
+
+# Every generated artifact (figures, metrics) lands in .cache/ — the workspace's
+# shared, untracked tree of intermediate data. The source tree stays clean.
+ARTIFACTS = REPO_ROOT / ".cache" / "reports-artifacts" / SUBJECT_PATH
+
+# Per-run log files, one directory per lab, in the workspace's shared logs/ tree.
+LOGS = REPO_ROOT / "logs" / SUBJECT_PATH
 
 EDA = ARTIFACTS / "eda"
 LAB1 = ARTIFACTS / "lab1"

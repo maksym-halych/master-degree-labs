@@ -1,31 +1,38 @@
-"""Готує всі артефакти звіту ЛР №2 (PyTorch).
+"""Produces every artifact of the lab 2 report (PyTorch).
 
-ЗАПУСК — з теки дисципліни (там, де лежить pyproject.toml):
+RUN — from the workspace root, with REPORT pointing at this directory:
 
-    uv run python lab2/run.py
+    make run-lab REPORT="src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології/lab2"
 
-ПОТРЕБУЄ ЛР №1: рисунок порівняння фреймворків будується з метрик lab1.json,
-тому спершу треба виконати `uv run python lab1/run.py`. Скрипт перевіряє це
-до початку навчання, а не після.
+With REPORT set in .env, `make run-lab` on its own does the same. Without make:
 
-Рисунки й метрики пишуться у .cache/reports-artifacts/<семестр>/<дисципліна>/,
-шлях обчислює aiit.config. Сам PDF цей скрипт не збирає — для цього є
-`make render-report` у корені робочого простору.
+    uv run --project "src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології" \
+        python "src/1th term 2026 Autumn/Штучний інтелект та інноваційні інформаційні технології/lab2/run.py"
+
+REQUIRES LAB 1: the framework comparison figure is built from the lab1.json
+metrics, so lab1/run.py has to run first. This script checks that before
+training starts rather than after.
+
+Every path is derived from __file__, so the working directory does not matter.
+Figures and metrics go to .cache/reports-artifacts/<term>/<subject>/ and the run
+log to logs/<term>/<subject>/lab2/ — both computed by aiit.config. This script
+does not build the PDF; `make render-report` at the workspace root does.
 """
 
 import logging
 import sys
 
 from aiit.config import LAB2
+from aiit.logs import configure_logging
 from aiit.run_lab2 import LAB1_METRICS, run_pytorch_experiments
 
 log = logging.getLogger("lab2")
 
-# Що цей скрипт зобов'язаний залишити на диску. Перевіряється після етапу:
-# мовчазно відсутній рисунок інакше виявиться аж на збірці PDF.
+# What this script is obliged to leave on disk. Checked after the stage: a
+# silently missing figure would otherwise only surface at the PDF build.
 STAGES: tuple[tuple[str, object, tuple], ...] = (
     (
-        "Експерименти PyTorch і порівняння фреймворків",
+        "PyTorch experiments and framework comparison",
         run_pytorch_experiments,
         (
             LAB2 / "learning_curves.png",
@@ -39,18 +46,15 @@ STAGES: tuple[tuple[str, object, tuple], ...] = (
 
 
 def main() -> int:
-    """Виконує етапи по черзі. Повертає код завершення процесу."""
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s  %(levelname)-7s %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
-    )
+    """Runs the stages in order. Returns the process exit code."""
+    log_file = configure_logging("lab2")
+    log.info("Logging to %s", log_file)
 
-    # Перевіряємо до навчання: інакше про відсутність метрик ЛР №1 стало б
-    # відомо аж наприкінці, після кількох хвилин роботи.
+    # Checked before training: otherwise the missing lab 1 metrics would only
+    # become known at the very end, after several minutes of work.
     if not LAB1_METRICS.exists():
-        log.error("Немає метрик ЛР №1: %s", LAB1_METRICS)
-        log.error("Спершу виконайте: uv run python lab1/run.py")
+        log.error("No lab 1 metrics at: %s", LAB1_METRICS)
+        log.error("Run lab 1 first: make run-lab REPORT=<...>/lab1")
         return 1
 
     for title, run, expected in STAGES:
@@ -58,17 +62,17 @@ def main() -> int:
         try:
             run()
         except Exception:
-            log.exception("Етап «%s» завершився помилкою", title)
+            log.exception("Stage %r failed", title)
             return 1
 
         missing = [p for p in expected if not p.exists()]
         if missing:
             for path in missing:
-                log.error("Етап «%s» не створив артефакт: %s", title, path)
+                log.error("Stage %r did not produce the artifact: %s", title, path)
             return 1
-        log.info("Артефактів перевірено: %d", len(expected))
+        log.info("Artifacts verified: %d", len(expected))
 
-    log.info("Готово. Збірка звіту: make render-report")
+    log.info("Done. Build the report with: make render-report")
     return 0
 
 

@@ -1,9 +1,9 @@
-"""Збереження рисунків у стисненому вигляді.
+"""Saving figures in a compressed form.
 
-Графік — це суцільні заливки й тонкі лінії, тобто кілька десятків унікальних
-кольорів, а matplotlib пише їх як повноколірний RGB. Палітра на 256 кольорів
-візуально нічого не змінює, але прибирає ~70% ваги PNG, а з нею й ваги PDF
-звіту, куди ці рисунки потрапляють без повторного стиснення.
+A plot is flat fills and thin lines, that is a few dozen unique colours, yet
+matplotlib writes it as full-colour RGB. A 256-colour palette changes nothing
+visually but strips ~70% off the PNG, and with it off the report PDF these
+figures are embedded into without being recompressed.
 """
 
 from pathlib import Path
@@ -16,25 +16,27 @@ PALETTE_COLORS = 256
 
 def save_figure(fig: Figure, outpath: Path) -> None:
     """
-    Зберегти рисунок як PNG з палітрою замість повного RGB.
+    Save a figure as a palette PNG instead of full RGB.
 
     Args:
-        fig: Рисунок matplotlib; викликач закриває його сам.
-        outpath: Шлях до файлу; батьківські теки створюються за потреби.
+        fig: The matplotlib figure; the caller closes it itself.
+        outpath: Destination path; parent directories are created as needed.
     """
     outpath.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(outpath, bbox_inches="tight")
 
     with Image.open(outpath) as saved:
-        # Роздільність (чанк pHYs) Pillow при записі не переносить, а graphicx
-        # бере з неї власний розмір рисунка — без неї PNG вважається 72 dpi.
+        # Pillow does not carry the resolution (the pHYs chunk) over on write,
+        # and graphicx derives the figure's own size from it — without it the
+        # PNG is taken to be 72 dpi.
         dpi = saved.info.get("dpi")
-        # convert() дочитує файл повністю, тож перезапис нижче безпечний.
+        # convert() reads the file to the end, so the overwrite below is safe.
         rgb = saved.convert("RGB")
 
-    # MAXCOVERAGE, а не швидший FASTOCTREE: той зсуває білий фон на (254,254,254)
-    # і тим змінює кожен піксель рисунка. Без дизерингу — він розсіює рівні
-    # заливки на шум, який PNG уже не стискає, і файл виходить важчим.
+    # MAXCOVERAGE rather than the faster FASTOCTREE: that one shifts the white
+    # background to (254,254,254) and thereby changes every pixel of the figure.
+    # No dithering — it scatters flat fills into noise that PNG can no longer
+    # compress, leaving a heavier file.
     palette = rgb.quantize(
         colors=PALETTE_COLORS,
         method=Image.Quantize.MAXCOVERAGE,

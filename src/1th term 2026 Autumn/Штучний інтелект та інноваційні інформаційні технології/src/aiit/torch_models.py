@@ -1,7 +1,7 @@
-"""Архітектури нейронних мереж у PyTorch (завдання 6-7).
+"""Neural network architectures in PyTorch (tasks 6-7).
 
-Архітектури навмисно повторюють tf_models.py шар у шар, щоб порівняння
-фреймворків у лабораторній роботі №2 було коректним.
+The architectures deliberately mirror tf_models.py layer for layer, so that the
+framework comparison in lab 2 is a fair one.
 """
 
 import torch
@@ -20,11 +20,11 @@ def _activation(name: str) -> nn.Module:
     try:
         return _ACTIVATIONS[name]()
     except KeyError:
-        raise ValueError(f"Невідома функція активації: {name}") from None
+        raise ValueError(f"Unknown activation function: {name}") from None
 
 
 def build_baseline(input_dim: int, activation: str) -> nn.Module:
-    """Базова feedforward мережа: два приховані шари, без регуляризації."""
+    """Baseline feedforward network: two hidden layers, no regularization."""
     return nn.Sequential(
         nn.Linear(input_dim, HIDDEN_UNITS[0]),
         _activation(activation),
@@ -35,7 +35,7 @@ def build_baseline(input_dim: int, activation: str) -> nn.Module:
 
 
 def build_regularized(input_dim: int, activation: str) -> nn.Module:
-    """Ускладнена мережа: Dropout + BatchNorm1d + L2 (через weight_decay)."""
+    """Extended network: Dropout + BatchNorm1d + L2 (through weight_decay)."""
     layers: list[nn.Module] = []
     prev = input_dim
 
@@ -53,10 +53,11 @@ def build_regularized(input_dim: int, activation: str) -> nn.Module:
 
 
 def all_models(input_dim: int) -> dict[str, tuple[nn.Module, float]]:
-    """Чотири конфігурації разом зі значенням weight_decay для кожної.
+    """Four configurations together with the weight_decay value for each.
 
-    У Keras L2 задається на рівні шару, у PyTorch — параметром оптимізатора
-    weight_decay. Базові моделі регуляризації не мають, тому weight_decay=0.
+    In Keras L2 is declared per layer, in PyTorch it is the optimizer's
+    weight_decay parameter. The baseline models carry no regularization, hence
+    weight_decay=0.
     """
     models: dict[str, tuple[nn.Module, float]] = {}
     for activation in ACTIVATIONS:

@@ -1,6 +1,6 @@
-"""Завантаження та попередня обробка набору даних California Housing.
+"""Loading and preprocessing of the California Housing dataset.
 
-Завдання 4-5: препроцесинг (StandardScaler + PCA) і поділ train/val/test.
+Tasks 4-5: preprocessing (StandardScaler + PCA) and the train/val/test split.
 """
 
 import numpy as np
@@ -14,27 +14,27 @@ from aiit.config import SEED, TARGET_BINS, TEST_SIZE, VAL_SIZE
 
 
 def load_raw() -> tuple[pd.DataFrame, pd.Series]:
-    """Повертає ознаки та цільову змінну у вигляді pandas-об'єктів."""
+    """Returns the features and the target as pandas objects."""
     bunch = fetch_california_housing(as_frame=True)
     return bunch.data, bunch.target
 
 
 def target_bins(y: pd.Series, n_bins: int = TARGET_BINS) -> pd.Series:
-    """Квантильні групи цільової змінної.
+    """Quantile groups of the target.
 
-    Задача регресійна, тому класового дисбалансу в прямому сенсі немає.
-    Розбиття на квантильні групи дозволяє проаналізувати перекіс розподілу
-    цільової змінної (завдання 3) і виконати стратифікований поділ вибірки.
+    The task is a regression, so there is no class imbalance in the literal
+    sense. Splitting into quantile groups is what makes it possible to analyse
+    the skew of the target distribution (task 3) and to stratify the split.
     """
     return pd.qcut(y, q=n_bins, labels=False, duplicates="drop")
 
 
 def split(X: pd.DataFrame, y: pd.Series):
-    """Стратифікований за квантилями цільової змінної поділ 60/20/20.
+    """A 60/20/20 split stratified by the quantile groups of the target.
 
-    Стратифікація потрібна тому, що розподіл MedHouseVal має помітний перекіс
-    і штучний «стеля»-ефект на максимумі: випадковий поділ дав би вибірки
-    з різною часткою дорогих будинків.
+    Stratification is needed because the distribution of MedHouseVal is
+    noticeably skewed and artificially capped at its maximum: a random split
+    would leave the samples with differing shares of expensive houses.
     """
     strata = target_bins(y)
 
@@ -57,11 +57,11 @@ def split(X: pd.DataFrame, y: pd.Series):
 
 
 def prepare(use_pca: bool = False, n_components: int = 6):
-    """Повний пайплайн підготовки даних.
+    """The full data preparation pipeline.
 
-    Scaler навчається виключно на тренувальній вибірці, після чого
-    застосовується до валідаційної та тестової — інакше статистики test
-    просочилися б у навчання (data leakage).
+    The scaler is fitted on the training sample only and then applied to the
+    validation and test samples — otherwise the test statistics would leak
+    into training.
     """
     X, y = load_raw()
     X_train, X_val, X_test, y_train, y_val, y_test = split(X, y)
