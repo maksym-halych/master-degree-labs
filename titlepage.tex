@@ -1,0 +1,38 @@
+% titlepage.tex — титульний аркуш, спільний для всіх дисциплін.
+% Потребує визначених у subject.tex команд:
+%   \SubjectName, \LecturerName, \StudentName, \StudentGroup, \AcademicYear
+%
+% Використання у тексті: \MakeLabTitle{1}{Тема роботи}
+
+\newcommand{\MakeLabTitle}[2]{%
+\begin{titlepage}
+\begin{center}
+  {\large\bfseries МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ}\\[6pt]
+  {\large\bfseries Національний університет «Львівська політехніка»}\\[6pt]
+  {\large\bfseries Інститут комп'ютерних наук та інформаційних технологій}\\[6pt]
+  {\large\bfseries Кафедра «Системи штучного інтелекту»}\\[1.2cm]
+
+  \includegraphics[width=5cm]{../../../../logo}\\[1.2cm]
+
+  {\Large\bfseries ЛАБОРАТОРНА РОБОТА №#1}\\[0.5cm]
+  з дисципліни\\[4pt]
+  «\SubjectName»\\[0.6cm]
+  на тему\\[4pt]
+  \textit{#2}\\[2cm]
+\end{center}
+
+\begin{flushright}
+  {\bfseries Виконав:}\\
+  студент групи \StudentGroup\\
+  \StudentName\\[1cm]
+  {\bfseries Викладач:}\\
+  \LecturerName\\
+\end{flushright}
+
+\vfill
+\begin{center}
+  Львів --- \AcademicYear
+\end{center}
+\end{titlepage}
+\clearpage
+}

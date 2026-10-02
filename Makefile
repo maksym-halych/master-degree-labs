@@ -1,5 +1,6 @@
 .DEFAULT_GOAL := help
 .PHONY: help run download-models pre-commit
+.PHONY: render-report
 
 CACHE_DIR   := ./.cache
 MODELS_DIR  := $(CACHE_DIR)/models
@@ -19,7 +20,7 @@ VAD_URL     := https://raw.githubusercontent.com/snakers4/silero-vad/v6.2.1/src/
 MODEL_FILES := config.json vocab.txt nemo128.onnx encoder-model.onnx encoder-model.onnx.data decoder_joint-model.onnx
 
 help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
 # FILE_ID comes from .env; passing it here expands to a positional argument that
 # overrides the setting, and expands to nothing when unset.
@@ -40,3 +41,55 @@ $(MODELS_DIR)/%:
 
 pre-commit: ## Run every pre-commit hook over the tree
 	uv run --directory $(PROJECT) pre-commit run --all-files
+
+# --- Lab reports -----------------------------------------------------------
+# No subject is named anywhere below. render-report derives everything from
+# REPORT, and producing artifacts is each lab's own run.py, so neither a new
+# subject nor a new lab needs a change in this file.
+#
+# Subject paths hold spaces and Cyrillic. GNU Make splits targets, prerequisites
+# and $(dir)/$(notdir) on whitespace, so such a path can be none of those: it
+# appears only inside recipes, quoted, where the shell handles it.
+
+# Which report to render, as the path to the directory holding its main.tex:
+#   REPORT=src/1th term 2026 Autumn/<subject>/lab1
+# Read from .env the way FILE_ID is, so `make render-report` takes no arguments.
+# `?=` lets a one-off override win: `make render-report REPORT=<other>`.
+REPORT ?= $(shell sed -n 's/^[[:space:]]*REPORT=//p' .env 2>/dev/null | tail -1)
+
+# Submission date in the published filename. Defaults to today; pin it with
+# `make render-report DATE=2026-10-02` to overwrite an earlier build in place
+# rather than leaving a second PDF behind.
+DATE ?= $(shell date +%F)
+
+# -lualatex, not -pdf: under pdfLaTeX the listings package cannot read UTF-8 and
+# halts on the Cyrillic comments in the code listings (see preamble.tex).
+LATEXMK := latexmk -lualatex -shell-escape -interaction=nonstopmode -halt-on-error -file-line-error
+
+# Producing a report's artifacts is not a make target: each lab owns a run.py
+# that declares its own stages and outputs (see lab*/run.py for how to run it).
+# Rendering is the one operation uniform across every report, so it lives here.
+#
+# The report is the deliverable, so it lands in docs/; only the LaTeX scratch
+# files stay next to the source, in build/. Term, subject and report name all
+# come from where REPORT sits, so a new subject needs no change here.
+#
+# Every path component is derived in the shell, never with Make's $(dir)/$(notdir):
+# those split on whitespace, and these paths are full of spaces.
+render-report: ## Render the report at REPORT (from .env) into docs/reports/
+	@set -e; \
+	src="$(REPORT)"; src="$${src%/}"; \
+	[ -n "$$src" ] || { echo "REPORT is unset. Set it in .env, or pass REPORT=<dir holding main.tex>"; exit 1; }; \
+	[ -f "$$src/main.tex" ] || { echo "no main.tex in '$$src'"; exit 1; }; \
+	root="$$PWD"; \
+	name="$$(basename "$$src")"; \
+	subject="$$(basename "$$(dirname "$$src")")"; \
+	term="$$(basename "$$(dirname "$$(dirname "$$src")")")"; \
+	stem="$$(printf '%s' "$$name" | sed 's/[0-9]*$$//')"; \
+	num="$$(printf '%s' "$$name" | sed 's/^[^0-9]*//')"; \
+	title="$$(printf '%s' "$$stem" | sed 's/^./\U&/')$${num:+ $$num}"; \
+	out="$$root/docs/reports/$$term/$$subject"; \
+	( cd "$$src" && $(LATEXMK) -outdir=build -jobname="$$name" main.tex ); \
+	mkdir -p "$$out"; \
+	cp "$$src/build/$$name.pdf" "$$out/$(DATE) - $$title.pdf"; \
+	echo "wrote docs/reports/$$term/$$subject/$(DATE) - $$title.pdf"
