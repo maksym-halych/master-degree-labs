@@ -38,6 +38,12 @@
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black}
 
+% xurl дозволяє \url розривати адресу в будь-якому місці, а не лише після
+% скісної риски. Без нього довгий сегмент шляху (напр. «scopus---podrobnaya-
+% instruktsiya-dlya-uchenogo») виходить за межі сторінки, бо дефіс для hyperref
+% не є точкою розриву. Вантажиться після hyperref — перевизначає його \UrlBreaks.
+\usepackage{xurl}
+
 % ----------------------------
 % Лістинги програмного коду
 % ----------------------------

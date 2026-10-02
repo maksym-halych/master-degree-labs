@@ -3,6 +3,10 @@
 %   \SubjectName, \LecturerName, \StudentName, \StudentGroup, \AcademicYear
 %
 % Використання у тексті: \MakeLabTitle{1}{Тема роботи}
+%
+% Рід роботи. Дисципліни з практичними роботами перевизначають його після
+% \input{preamble}: \renewcommand{\WorkKind}{ПРАКТИЧНА РОБОТА}.
+\newcommand{\WorkKind}{ЛАБОРАТОРНА РОБОТА}
 
 \newcommand{\MakeLabTitle}[2]{%
 \begin{titlepage}
@@ -14,12 +18,18 @@
 
   \includegraphics[width=5cm]{../../../../logo}\\[1.2cm]
 
-  {\Large\bfseries ЛАБОРАТОРНА РОБОТА №#1}\\[0.5cm]
+  {\Large\bfseries \WorkKind{} №#1}\\[0.5cm]
   з дисципліни\\[4pt]
   «\SubjectName»\\[0.6cm]
   на тему\\[4pt]
-  \textit{#2}\\[2cm]
+  \textit{#2}
 \end{center}
+
+% Відступ до блоку «Виконав» гнучкий, а не фіксований (було 2 cm). Фіксований
+% разом із довгим родом роботи чи темою на два рядки переповнював сторінку, і
+% «Львів --- рік» зі свого \vfill з'їжджав на окрему другу сторінку. \vfill
+% стискається до нуля, коли місця бракує, тож переповнення стало неможливим.
+\vfill
 
 \begin{flushright}
   {\bfseries Виконав:}\\
