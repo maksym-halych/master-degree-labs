@@ -7,7 +7,7 @@ from lecture_transcriber.__main__ import resolve_file_id
 
 
 def test_configured_id_is_used_when_no_argument_given() -> None:
-    """The usual workflow: FILE_ID lives in .env and `make run` takes no argument."""
+    """The usual workflow: FILE_ID in .env, `make transcribe-lecture` takes no argument."""
     assert resolve_file_id(None, "1fromEnv") == "1fromEnv"
 
 

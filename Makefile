@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help run download-models pre-commit
+.PHONY: help transcribe-lecture download-models pre-commit
 .PHONY: render-report
 
 CACHE_DIR   := ./.cache
@@ -20,11 +20,11 @@ VAD_URL     := https://raw.githubusercontent.com/snakers4/silero-vad/v6.2.1/src/
 MODEL_FILES := config.json vocab.txt nemo128.onnx encoder-model.onnx encoder-model.onnx.data decoder_joint-model.onnx
 
 help: ## Show this help
-	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 # FILE_ID comes from .env; passing it here expands to a positional argument that
 # overrides the setting, and expands to nothing when unset.
-run: ## Transcribe the recording in .env, or: make run FILE_ID=<id> [ARGS=-v]
+transcribe-lecture: ## Transcribe the recording in .env, or: make transcribe-lecture FILE_ID=<id> [ARGS=-v]
 	uv run --project $(PROJECT) lecture-transcriber $(FILE_ID) $(ARGS)
 
 download-models: $(addprefix $(MODELS_DIR)/,$(MODEL_FILES)) $(MODELS_DIR)/silero_vad.onnx ## Download Parakeet TDT v3 int8 ONNX weights into ./.cache/models
