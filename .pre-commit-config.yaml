@@ -44,11 +44,15 @@ repos:
   #       args: [ "-c", "pyproject.toml" ]
   #       additional_dependencies: [ "bandit[toml]" ]
 
+  # pre-commit always runs hooks from the repo root, but these three discover
+  # their config (pyproject.toml, the lockfile) relative to the working
+  # directory — so they cd into the project with `--directory`. The pipeline
+  # itself must not: see the note in the Makefile.
   - repo: local
     hooks:
       - id: pip-audit
         name: pip-audit
-        entry: uv run pip-audit
+        entry: uv run --directory lecture-transcriber pip-audit
           # --ignore-vuln PYSEC-2024-277
         language: system
         pass_filenames: false
@@ -58,7 +62,7 @@ repos:
     hooks:
       - id: ty-check
         name: ty check
-        entry: uv run ty check
+        entry: uv run --directory lecture-transcriber ty check
         language: system
         pass_filenames: false
         always_run: true
@@ -67,7 +71,7 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: uv run pytest tests/ -x -q
+        entry: uv run --directory lecture-transcriber pytest tests/ -x -q
         language: system
         pass_filenames: false
         always_run: true

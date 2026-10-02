@@ -3,6 +3,11 @@
 
 CACHE_DIR   := ./.cache
 MODELS_DIR  := $(CACHE_DIR)/models
+# The tool is one project in this repo; .cache/, docs/ and logs/ are shared and
+# stay at the root. `--project` points uv at the subdir without changing the
+# working directory, so the pipeline's relative paths still land in those trees.
+# `--directory` (which does cd) would break them — use it only for dev tools.
+PROJECT     := lecture-transcriber
 HF_REPO     := https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/main
 VAD_URL     := https://raw.githubusercontent.com/snakers4/silero-vad/v6.2.1/src/silero_vad/data/silero_vad.onnx
 
@@ -19,7 +24,7 @@ help: ## Show this help
 # FILE_ID comes from .env; passing it here expands to a positional argument that
 # overrides the setting, and expands to nothing when unset.
 run: ## Transcribe the recording in .env, or: make run FILE_ID=<id> [ARGS=-v]
-	uv run lecture-transcriber $(FILE_ID) $(ARGS)
+	uv run --project $(PROJECT) lecture-transcriber $(FILE_ID) $(ARGS)
 
 download-models: $(addprefix $(MODELS_DIR)/,$(MODEL_FILES)) $(MODELS_DIR)/silero_vad.onnx ## Download Parakeet TDT v3 int8 ONNX weights into ./.cache/models
 	@echo "models ready in $(MODELS_DIR)"
@@ -34,4 +39,4 @@ $(MODELS_DIR)/%:
 	curl -fL --progress-bar -o $@ $(HF_REPO)/$*
 
 pre-commit: ## Run every pre-commit hook over the tree
-	uv run pre-commit run --all-files
+	uv run --directory $(PROJECT) pre-commit run --all-files
