@@ -1,6 +1,6 @@
-# Project: Lecture Transcriber
+# Workspace: Master's degree labs
 
-Turn the video recording of lecture into text artifacts for future LLM analysis and usage. Core artifacts are transcription and summary.
+Two projects share this repository. **Lecture Transcriber** (`./lecture-transcriber/`) turns the video recording of a lecture into text artifacts for future LLM analysis and usage; its core artifacts are transcription and summary. **Lab reports** (`./src/<term>/<subject>/`) are the coursework: one Python package per subject plus one LaTeX report per lab. The Quick Context below covers the transcriber; the Lab Reports section covers the coursework; Role, Coding Conventions and Do NOT apply to both.
 
 ## Role
 
@@ -22,9 +22,17 @@ Before finalizing code, check for: type safety, error handling, edge cases.
 - Use the **fp32** Parakeet weights, never the `.int8` ones. The int8 encoder is broken on this audio: it emits the blank token at nearly every timestep and yields ~1 transcribed character per second against fp32's 14, while running no faster on CPU. fp32 costs 2.5 GB on disk and ~3 GB RSS per worker
 - Audio goes to the server as 16 kHz mono WAV, not Opus. The server's internal ffmpeg conversion reports a bogus `duration` for compressed input — 6.11 s for a 60 s Opus file — which lands in the segment end times and silently corrupts `transcript_coverage`
 - Keep `chunk_seconds` under ~400 s, the encoder's single-pass limit. Past it the server splits internally and de-duplicates the seams, losing text: one 1206 s request yields 10.7 chars/s where the same audio in 390 s pieces yields 15.2
-- Three output trees, and the distinction matters: `./.cache/` holds media, weights, credentials and intermediates and is gitignored; `./docs/` holds the committed Markdown artifacts; `./logs/` holds one gitignored log file per run, named `YYYY-MM-DD_HH-MM-SS.log`
+- Three output trees, and the distinction matters: `./.cache/` holds media, weights, credentials and intermediates and is gitignored; `./docs/` holds the committed Markdown artifacts; `./logs/` holds one gitignored log file per run, named `YYYY-MM-DD_HH-MM-SS.log` — at the top level for the transcriber, in a per-lab subdirectory for the coursework
 - Every run logs its effective settings and the resolved Drive path up front. Secrets are reported as `<set>`/`<unset>`, and the HTTP client loggers are capped at WARNING — their DEBUG records dump request headers, which would write bearer tokens to disk. Keep it that way when adding logging
 - `./docs/` mirrors the Drive folder hierarchy, one directory per lecture holding `summary.md` and `transcript.md`, both carrying YAML frontmatter for provenance
+
+## Lab Reports
+
+- One project per subject at `./src/<term>/<subject>/`, holding its own `pyproject.toml` and `src/<package>/`, plus one `lab<N>/` directory per lab containing `main.tex` and `run.py`. Each subject pins its own interpreter, which is not the transcriber's 3.14 — the AI subject is held at `>=3.12,<3.13` by its TensorFlow pin. The package holds all the computation; `run.py` is orchestration only — the list of stages and the check that every declared artifact really appeared
+- Two make targets, both driven by `REPORT` (the path to a `lab<N>/` directory, read from `.env` so a bare invocation works): `make run-lab` produces a lab's artifacts, `make render-report` renders its PDF into `./docs/Reports/`. Neither names a subject — both derive term, subject and lab from where `REPORT` points, so a new subject or lab needs no change to the `Makefile`
+- Three trees, all derived from the lab's own location, never duplicated as strings: figures and metrics to `./.cache/reports-artifacts/<term>/<subject>/`, run logs to `./logs/<term>/<subject>/<lab>/`, the finished PDF to `./docs/Reports/<term>/<subject>/`. `config.SUBJECT_PATH` computes the shared `<term>/<subject>` part from `__file__`
+- Reports embed their sources with `\inputminted[firstline=,lastline=]`, so **editing a lab module shifts the line ranges in `main.tex`** — a stale range silently prints the wrong lines, or cuts a listing mid-expression. After changing a module, re-derive every range that points at it, rebuild the PDF, and read the rendered listing to confirm it starts and ends on a complete statement
+- `latexmk` runs as `-lualatex`: under pdfLaTeX the listings package cannot read UTF-8 and halts on the Cyrillic in the sources
 
 ## Coding Conventions
 
@@ -34,11 +42,14 @@ Before finalizing code, check for: type safety, error handling, edge cases.
 - Docstrings on public functions using Google style (see template below)
 - Use the `logging` module — `log = logging.getLogger(__name__)`; never `print()`
 - Comments explain **why**, not what
+- **Write Python in English** — comments, docstrings, log records and exception messages, with no exceptions for a subject whose report is in Ukrainian. The one case that stays in another language is a string that is itself a deliverable rather than code: a matplotlib title, axis label or legend rendered into a figure the Ukrainian report displays. Say so in the module docstring when a module holds such strings, so the next reader does not "fix" them
+- **Every entry point runs from the workspace root.** Derive paths from `__file__` (`Path(__file__).resolve().parent...`), never from the working directory, and document only the root-relative command — a lab's `run.py` is launched as `make run-lab`, never by `cd`-ing into its directory first. The transcriber is the one exception to `__file__`-derivation — its output paths come from settings and so are working-directory-relative, which is exactly why it too must be run from the root; see the `--project` rule above
+- **Every entry point writes a log file.** Console at INFO, file at DEBUG, one file per run named `YYYY-MM-DD_HH-MM-SS.log` in local time, under this project's own subdirectory of `./logs/`. A long run is expensive to repeat, so the detail needed to diagnose it has to survive a run nobody was watching. Pass `force=True` to `basicConfig`: it is a no-op once anything else has touched the root logger, and TensorFlow, matplotlib and the Google client all do so on import — one of them getting there first would silently cost the log file. Cap the noisy third-party loggers while you are there (matplotlib and PIL at WARNING, the HTTP stacks per the secrets rule above)
 - Each pipeline stage caches its output under `./.cache/jobs/<drive-file-id>/`; a failure in a later stage must never force a re-run of transcription
 - Record `transcript_coverage` in artifact frontmatter — a run where the ASR server silently dropped audio must be detectable after the fact
 - f-strings for string formatting (no `.format()` or `%` formatting)
 - Prefer `pathlib.Path` for new file-path code
-- Commit messages follow Commitizen / Conventional Commits: `type(scope): subject`, imperative and lowercase, no trailing period. Types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`. Scope is the module or area (`drive`, `asr`, `audio`, `summarize`, `cli`, `docker`, `docs`)
+- Commit messages follow Commitizen / Conventional Commits: `type(scope): subject`, imperative and lowercase, no trailing period. Types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`. Scope is the module or area — `drive`, `asr`, `audio`, `summarize`, `cli`, `docker`, `docs` for the transcriber; the subject's package name (`aiit`) or `reports` for the coursework
 
 **Service/utility functions — Google style:**
 
@@ -71,3 +82,5 @@ def get_item(item_id: int, db: Session) -> Item:
 - Do not use mutable default arguments
 - Do not add `print()` statements for debugging — use the `logging` module
 - Do not use `from __future__ import annotations` at the top of a module
+- Do not write a comment, docstring or log message in Ukrainian, and do not document a command that only works after a `cd` into a subdirectory
+- Do not leave a script logging to the console alone — no bare `basicConfig` with a `StreamHandler` and no file
