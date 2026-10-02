@@ -1,9 +1,15 @@
 """Tests for the startup settings report."""
 
+from typing import Any
+
 from lecture_transcriber.config import Settings
 
 
-def _settings(**overrides: object) -> Settings:
+# `Any`, not `object`: pydantic-settings generates an `__init__` with a narrowly
+# typed keyword parameter per field plus its own `_cli_*`/`_secrets_dir` knobs,
+# and `object` is assignable to none of them — one type error per candidate.
+# Values are validated by pydantic at runtime regardless of the annotation.
+def _settings(**overrides: Any) -> Settings:
     """
     Build Settings from explicit values, ignoring any .env on the machine.
 
