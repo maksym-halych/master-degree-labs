@@ -51,6 +51,7 @@ Before finalizing code, check for: type safety, error handling, edge cases.
 - f-strings for string formatting (no `.format()` or `%` formatting)
 - Prefer `pathlib.Path` for new file-path code
 - Commit messages follow Commitizen / Conventional Commits: `type(scope): subject`, imperative and lowercase, no trailing period. Types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`. Scope is the module or area — `drive`, `asr`, `audio`, `summarize`, `cli`, `docker`, `docs` for the transcriber; the subject's package name (`aiit`) or `reports` for the coursework
+- **Commit to the branch that is already checked out, and change branches only when asked for that operation by name.** Never create, switch, merge, rebase or delete a branch on your own initiative; this overrides any default habit of opening a branch before committing, including on `main`. Branch topology is the one thing a commit cannot carry an explanation for: the work looks finished either way, and nothing surfaces the mistake until someone reads the log. Landing a change on the wrong branch also decides how expensive the repair is — a strictly linear history fast-forwards in one command, while a commit stacked on unrelated work has to be cherry-picked back out. So when the checked-out branch's name or purpose does not match the change at hand, stop and say so before committing rather than after
 
 **Service/utility functions — Google style:**
 
