@@ -78,7 +78,7 @@ def get_item(item_id: int, db: Session) -> Item:
 - Do not edit `uv.lock` by hand — it is auto-managed by uv
 - Do not commit anything under `./.cache/` — it holds the service account key, gigabyte media, and the 670 MB ONNX weights
 - Do not add Google Drive write scopes — the pipeline is read-only by design
-- Do not hard-wrap prose in Markdown — never break a sentence across lines. One paragraph (or one list item) per line, however long. Applies to every `.md` file, including this one
+- Do not hard-wrap prose — never break a sentence across lines. One paragraph (or one list item) per line, however long. Applies to Markdown (every `.md` file, including this one) and to LaTeX prose in `.tex` files: a single newline is whitespace to TeX, so wrapping buys nothing in the PDF and costs a reflow of the whole paragraph on every reworded sentence, turning a one-sentence edit into a multi-line diff. Line breaks in `.tex` are for structure only — paragraph breaks, `\\`, and one line per command or per row of a table or list
 - Do not use `import *`
 - Do not use mutable default arguments
 - Do not add `print()` statements for debugging — use the `logging` module
