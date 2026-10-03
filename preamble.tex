@@ -20,9 +20,14 @@
 
 \usepackage{microtype}
 
-\usepackage[left=25mm,right=15mm,top=20mm,bottom=20mm]{geometry}
+% Поля, інтервал, відступи й заголовки нижче взяті з шаблону НУЛП, за яким
+% написана бакалаврська робота (../bachelor-thesis/thesis/main.tex). Той самий
+% формат приймає В.М. Шиманський і для магістерських, тож усі звіти тримаємо
+% в ньому, а не в тому, що переказували на консультації.
+\usepackage[left=25mm,right=15mm,top=15mm,bottom=23mm,footskip=1.5mm]{geometry}
 \usepackage{setspace}
-\onehalfspacing
+% Саме \setstretch{1.5}, а не \onehalfspacing: останній дає близько 1.25.
+\setstretch{1.5}
 
 \usepackage{graphicx}
 \usepackage{float}
@@ -31,7 +36,10 @@
 \usepackage{tabularx}
 \usepackage{longtable}
 \usepackage{enumitem}
+% labelindent вирівнює маркер списку з абзацним відступом — так у шаблоні НУЛП.
 \setlist{nosep}
+\setlist[itemize]{label=\textbullet,leftmargin=*,labelindent=1.27cm}
+\setlist[enumerate]{leftmargin=*,labelindent=1.27cm}
 \usepackage{indentfirst}
 \usepackage{amsmath}
 
@@ -52,9 +60,15 @@
 % з коду, зліплюючи їх в один рядок. Потребує прапорця -shell-escape.
 \usepackage{xcolor}
 \usepackage[newfloat]{minted}
-\usepackage{caption}
+% labelsep=period дає «Рис. 2.1. Назва» замість «Рис. 2: Назва» — формат НУЛП.
+\usepackage[labelsep=period]{caption}
 
+% baselinestretch=1 обов'язковий: без нього лістинг успадковує півторашку
+% основного тексту, і довгий фрагмент коду перестає вміщатися у сторінку.
+% Усередині [H]-флоата це не помилка збірки, а нескінченний цикл порожніх
+% сторінок — lab1 так намолотив 161 тисячу сторінок.
 \setminted{
+  baselinestretch=1,
   fontsize=\footnotesize,
   linenos=true,
   frame=single,
@@ -79,28 +93,49 @@
 \renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
 \renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
 
-\titleformat{\section}{\fontsize{16}{19}\bfseries}{\thesection.}{0.5em}{}
-\titleformat{\subsection}{\fontsize{14}{17}\bfseries}{\thesubsection.}{0.5em}{}
-\titleformat{\subsubsection}{\fontsize{14}{17}\mdseries}{\thesubsubsection.}{0.5em}{}
+% Розділ по центру, 16 пт, великими літерами; слово «РОЗДІЛ» опущене, бо звіт
+% не дисертація. Номер лишається: \numberwithin прив'язує до нього нумерацію
+% рисунків («Рис. 2.1»), і без нумерованих розділів вона б зламалася.
+% \MakeUppercase четвертим аргументом отримує текст заголовка, тому в джерелі
+% заголовки пишуться звичайним регістром.
+\titleformat{\section}[block]
+  {\centering\bfseries\fontsize{16}{19.2}\selectfont}
+  {\thesection.}{0.3em}{\MakeUppercase}
+% Підрозділи — зліва з абзацного відступу, звичайним регістром.
+\titleformat{\subsection}[block]{\bfseries}{\thesubsection.}{1em}{}
+\titleformat{\subsubsection}[block]{\bfseries\itshape}{\thesubsubsection.}{1em}{}
 
 % Незіркові \titlespacing — обов'язкові. Без них titlesec застосовує зірковий
 % варіант, який прибирає абзацний відступ у першого абзацу після заголовка й
 % перекриває indentfirst. Значення — типові для report.
-\titlespacing{\section}{0pt}{3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}
-\titlespacing{\subsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
-\titlespacing{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\titlespacing{\section}{0pt}{20pt}{6pt}
+\titlespacing{\subsection}{1.27cm}{6pt}{0pt}
+\titlespacing{\subsubsection}{1.27cm}{6pt}{0pt}
 
 \setlength{\parindent}{1.27cm}
-\setlength{\emergencystretch}{2em}
+\setlength{\parskip}{0pt}
 \renewcommand{\arraystretch}{1.3}
+
+% Переноси слів вимкнені — так у шаблоні НУЛП. Натомість абзац розганяється
+% міжслівними пробілами, тому tolerance і emergencystretch підняті: без них
+% рядки виходили б за праве поле.
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\tolerance=9999
+\setlength{\emergencystretch}{3em}
 
 % ----------------------------
 % Підписи до рисунків і таблиць
 % ----------------------------
-\captionsetup[figure]{justification=centering,singlelinecheck=false,
-                      labelfont=bf,textfont=it}
-\captionsetup[table]{justification=raggedright,singlelinecheck=false,
-                     labelfont=bf}
+\captionsetup[figure]{name=Рис.,justification=centering,font={bf,it}}
+\captionsetup[table]{name=Таблиця,justification=raggedleft,
+                     singlelinecheck=false,labelfont=bf,textfont=normalfont}
+
+% Рисунки, таблиці й формули нумеруються в межах розділу: «Рис. 2.1», а не
+% «Рис. 5». Так у шаблоні НУЛП, і так само виглядали приклади на консультації.
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
 
 % ----------------------------
 % Колонтитули
