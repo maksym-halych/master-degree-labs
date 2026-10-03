@@ -1,6 +1,17 @@
 fail_fast: true
 
 repos:
+  # Listed first so fail_fast stops here, before the slow audit/typecheck/test
+  # hooks, rather than after them. Deliberate renders get in with
+  # `SKIP=block-pdf-commit git commit`.
+  - repo: local
+    hooks:
+      - id: block-pdf-commit
+        name: block pdf commit
+        entry: bash scripts/block-pdf-commit.sh
+        language: system
+        files: \.pdf$
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
