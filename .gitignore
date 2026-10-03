@@ -20,4 +20,16 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
+# LaTeX. `make render-report` confines its scratch to build/, so the loose
+# main.* files beside a lab's main.tex come from somewhere else: VS Code's
+# LaTeX Workshop autobuilds on every file change, under pdflatex and with its
+# output directory left at the source directory. That run always dies on
+# fontspec, which needs LuaTeX — it yields no PDF, only the leftovers below.
 build/
+src/**/*.aux
+src/**/*.fdb_latexmk
+src/**/*.fls
+src/**/*.log
+src/**/*.out
+src/**/*.synctex.gz
+src/**/*.toc
