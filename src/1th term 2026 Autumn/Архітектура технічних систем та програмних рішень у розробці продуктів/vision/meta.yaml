@@ -1,0 +1,19 @@
+---
+# Title block and pandoc-crossref configuration for the Architecture Vision
+# document. Consumed by ../scripts/render-md-report.sh via --metadata-file.
+# `title` exists only so pandoc emits \maketitle; header.tex overrides that
+# command and lays the cover out itself, so nothing here reaches the page. No
+# author or date: the cover is the lecturer's template reproduced as issued.
+title: ARCHITECTURE VISION
+lang: en-US
+
+# pandoc-crossref: the document numbers figures and tables within the section
+# (Figure 3.1), so the filter must not prepend its own flat counter.
+figureTitle: Figure
+tableTitle: Table
+figPrefix: Figure
+tblPrefix: Table
+secPrefix: section
+# LaTeX output takes numbering from the LaTeX counters set up in header.tex.
+numberSections: true
+...

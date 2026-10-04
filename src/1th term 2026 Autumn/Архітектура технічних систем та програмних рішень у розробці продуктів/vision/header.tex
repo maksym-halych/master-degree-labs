@@ -1,0 +1,289 @@
+% Preamble additions for the Architecture Vision document, injected by pandoc
+% with -H. Deliberately NOT ../../../../preamble.tex: that one is the NULP lab
+% preamble — it sets polyglossia to Ukrainian, names captions «Рис.» and
+% «Таблиця», loads minted for code listings this document has none of, and ends
+% by \input-ing titlepage.tex. This document is English, has no NULP title page,
+% and reproduces the Word template's own cover from \maketitle, redefined below.
+%
+% The whole file exists to make the PDF match "Architecture Vision
+% Template_masters.docx" page for page: Letter paper, the template's margins,
+% running head and foot, heading sizes, table style and list indents are all
+% taken from that document's styles.xml rather than chosen. Check a change
+% against the original before making it.
+%
+% BUILD: LuaLaTeX, via scripts/render-md-report.sh. Required by fontspec below.
+
+% Open Sans at 11pt is the Word template's Normal style, and it carries the
+% Cyrillic the author block needs. Both families below ship with TeX Live and
+% are found by filename through kpathsea, so no Path= and no fontconfig entry —
+% naming them the way fontconfig would ("Open Sans") is what fails here.
+\setmainfont{OpenSans-Regular.ttf}[
+  BoldFont=OpenSans-Bold.ttf,
+  ItalicFont=OpenSans-Italic.ttf,
+  BoldItalicFont=OpenSans-BoldItalic.ttf,
+]
+\setmonofont{DejaVu Sans Mono}[Scale=0.82]
+
+% Headings are set in the body face at regular weight — deliberately, with no
+% separate heading family. The template's Heading 1-4 styles name "Proxima Nova
+% Bl", which is commercial and installed nowhere in this toolchain or on the
+% machines the document is read on, so Word and every converter substitute the
+% body face: the template as anyone actually sees it has light headings whose
+% only weight contrast is the bold section number, which the styles apply to
+% the list number alone and not to the heading text. A black-weight stand-in
+% reproduces the style sheet's intent but not the document, and the document is
+% what has to match.
+% US Letter with 1in margins all round, matching the template's w:pgMar
+% (1440 twips on every side). The paper size also comes from the class option
+% passed by the build script; geometry alone would not correct it. An earlier
+% revision used A4, which fitted ~16% more text per page and so paginated
+% differently from the Word original — the document is a filled-in template and
+% has to lay out like one.
+\usepackage[letterpaper,left=1in,right=1in,top=1in,bottom=1in,
+            headsep=14pt,footskip=30pt]{geometry}
+\usepackage{setspace}
+% A touch looser than the template's single-spaced Normal style: the prose here
+% is denser than the issued template's placeholder text, and at 11pt on a
+% 6.5in measure the extra leading is what keeps a full page readable. Paragraph
+% separation stays the 6pt gap set further down, not the leading, so widening
+% this changes line rhythm only and not the gaps between blocks.
+\setstretch{1.15}
+
+\usepackage{microtype}
+
+% Loaded unconditionally: pandoc's template pulls graphicx in only when the
+% document actually contains an image, but the build script always appends a
+% \graphicspath, and that is undefined without it. Re-loading is a no-op.
+\usepackage{graphicx}
+
+% Figures sit exactly where the Markdown puts them, as the Word original's
+% images do. Without this LaTeX floats them to the next convenient page, which
+% in a document this sparse means a diagram drifting a page away from the
+% section that introduces it, with a half-empty page left behind.
+% Rewriting the environment to pass [H] explicitly, rather than setting
+% \fps@figure: float.sty only honours H when it is given as the optional
+% argument, and pandoc emits \begin{figure} without one.
+\usepackage{float}
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][]{\origfigure[H]}{\endorigfigure}
+
+% The six-part quality attribute scenario in 3.4 is the one figure drawn rather
+% than imported: in the Word template it is a drawing canvas whose shapes
+% autofit their text, and every converter clips it ("Respons", "credentials"
+% cut mid-word). Redrawing it keeps the template's layout with text that fits.
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit}
+
+% colortbl backs the black header row that scripts/md-report-tables.lua emits;
+% longtable and array supply the environment and the p-column modifiers it uses.
+\usepackage{etoolbox}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{colortbl}
+
+% The lab preamble's labelindent=1.27cm leaks into table cells and pushes
+% bullets against the cell edge; every table in this template has list cells.
+% 18pt is the Word list indent (0.25in to the bullet, 0.5in to the text), and
+% the 6pt item separation is the Normal style's paragraph spacing, which Word
+% applies between list items too.
+\usepackage{enumitem}
+\setlist{topsep=6pt,itemsep=6pt,parsep=0pt,partopsep=0pt}
+\setlist[itemize]{label=\textbullet,labelindent=18pt,leftmargin=*,labelsep=7pt}
+\setlist[enumerate]{labelindent=18pt,leftmargin=*,labelsep=7pt}
+% Inside a table cell the indent has nowhere to go, so lists reset to flush.
+% \parskip goes with them: a cell opens a paragraph before the list starts, so
+% the 6pt body spacing would land on top of the list's own and push the first
+% bullet off the top of the cell, out of line with its neighbours.
+% Keyed by type, not the plain \setlist: enumitem merges the two and the
+% type-specific declaration above wins every key it names, so a generic reset
+% here would leave the 18pt label indent in place inside the cells.
+\AtBeginEnvironment{longtable}{%
+  \setlength{\parskip}{0pt}%
+  \setlist[itemize]{topsep=0pt,partopsep=0pt,itemsep=4pt,parsep=0pt,
+    label=\textbullet,labelindent=0pt,leftmargin=*,labelsep=5pt}%
+  \setlist[enumerate]{topsep=0pt,partopsep=0pt,itemsep=4pt,parsep=0pt,
+    labelindent=0pt,leftmargin=*,labelsep=5pt}}
+
+% labelsep=period gives "Figure 3.1. Caption" rather than "Figure 3.1: Caption".
+% The template's Caption style: centred, italic, 10pt.
+\usepackage[labelsep=period]{caption}
+\captionsetup{font={it,small},justification=centering}
+\captionsetup[table]{justification=raggedright,singlelinecheck=false}
+
+% Headings are numbered four levels deep: the template numbers the view pattern
+% too, as 3.2.1.1 View Context / 4.1.1.1 Intent. --top-level-division=section
+% maps '#' to \section, so the figure and table counters must be re-tied to
+% section — left on chapter they would print "0.1".
+\setcounter{secnumdepth}{4}
+% extreport still counts chapters, so an unused chapter 0 would prefix every
+% number: "0.1 Introduction". Re-root the section numbers at \section.
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+\renewcommand{\theparagraph}{\thesubsubsection.\arabic{paragraph}}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+\numberwithin{equation}{section}
+
+% Contents page, matching the template's: every level dot-led, level 1 bold with
+% a bold page number, the three levels stepping in from the left margin.
+% Patched directly rather than through tocloft, which bails out with
+% "\@starttoc has already been redefined" -- pandoc's template gets there first,
+% and header-includes are injected at the end of the preamble, so tocloft can
+% never win that race from here. report.cls already dot-leads \l@section
+% because the top-level division is \section, so only the weights and the
+% indents need setting.
+\makeatletter
+\renewcommand*\l@section[2]{\@dottedtocline{1}{0em}{1.6em}{\bfseries #1}{\bfseries #2}}
+\renewcommand*\l@subsection{\@dottedtocline{2}{1.0em}{2.2em}}
+\renewcommand*\l@subsubsection{\@dottedtocline{3}{2.4em}{3.0em}}
+% \@dotsep is in math units; LaTeX's default 4.5 spaces the dots far wider than
+% the Word leader, which is near-continuous.
+\renewcommand*\@dotsep{1.3}
+\makeatother
+
+\usepackage{titlesec}
+% Each top-level heading opens a page, as the Word template has it. titlesec
+% runs \sectionbreak ahead of every \section, starred ones included, so this
+% covers the unnumbered Revision History too; \clearpage rather than \newpage so
+% a float cannot drift past the heading it belongs to.
+\newcommand{\sectionbreak}{\clearpage}
+% Sizes are the template's Heading 1-4: 24, 20, 16 and 12pt. The number is the
+% only part set bold, matching the template — see the font note at the top.
+% \chapter survives in this document only as the heading \tableofcontents emits,
+% and it carries no number, so it stays unbolded throughout like the heading
+% text beside it.
+\titleformat{\chapter}[block]{\fontsize{24}{28.8}\selectfont}{}{0pt}{}
+\titlespacing{\chapter}{0pt}{0pt}{16pt}
+\titleformat{\section}[block]{\fontsize{24}{28.8}\selectfont\raggedright}{\bfseries\thesection}{0.6em}{}
+\titleformat{\subsection}[block]{\fontsize{20}{24}\selectfont\raggedright}{\bfseries\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}[block]{\fontsize{16}{19.2}\selectfont\raggedright}{\bfseries\thesubsubsection}{0.6em}{}
+% Non-starred \titlespacing is required: the starred form titlesec applies by
+% default kills the indent of the first paragraph after a heading.
+\titlespacing{\section}{0pt}{20pt}{12pt}
+\titlespacing{\subsection}{0pt}{14pt}{6pt}
+\titlespacing{\subsubsection}{0pt}{12pt}{4pt}
+% The template's view pattern (Intent / Context / Representation / Element
+% Catalog) sits at '####' — the template's own Heading 4, 12pt. It gets its own
+% line and its own number (3.2.1.1), as in the Word original; a run-in form
+% reads better but paginates and numbers differently, and this document has to
+% match the template it is filled into.
+\titleformat{\paragraph}[block]{\fontsize{12}{14.4}\selectfont\raggedright}{\bfseries\theparagraph}{0.6em}{}
+\titlespacing{\paragraph}{0pt}{10pt}{4pt}
+
+% ---------------------------- Title page ----------------------------
+% The front page is fixed template furniture, not metadata, so it is written out
+% here rather than assembled by \maketitle from meta.yaml: the logo, the title
+% at 32pt (Title page1), the project and version block at 16pt and 14pt (Title
+% page2/3), and the date placeholder at 10pt grey (Title page date). It carries
+% no author — this is the lecturer's blank template reproduced as issued, and
+% the submitter's name belongs in the Revision History table, not on the cover.
+% \subtitle is neutralised for the same reason: pandoc emits it into the
+% preamble whenever meta.yaml defines one, and it must not reach \@title.
+\newcommand{\subtitle}[1]{}
+\renewcommand{\maketitle}{%
+  \begin{titlepage}%
+    \thispagestyle{empty}%
+    \vspace*{-12mm}%
+    \noindent\includegraphics[width=52mm]{softserve-logo.png}%
+    \vspace*{66mm}%
+    \par\noindent{\fontsize{32}{38.4}\selectfont ARCHITECTURE VISION}%
+    \vspace*{12mm}%
+    \par\noindent{\fontsize{16}{19.2}\selectfont \textless Project\textgreater}%
+    \vspace*{8mm}%
+    \par\noindent{\fontsize{14}{16.8}\selectfont Version 0.1}%
+    \vspace*{4mm}%
+    \par\noindent{\fontsize{14}{16.8}\selectfont For}%
+    \vspace*{4mm}%
+    \par\noindent{\fontsize{14}{16.8}\selectfont \textless CLIENT\textgreater}%
+    \vfill
+    \par\noindent{\fontsize{10}{12}\selectfont\color{black!55}[mm/dd/yyyy]}%
+    \vspace*{4mm}%
+  \end{titlepage}%
+  % The titlepage environment resets the counter to 1, which would put Contents
+  % on page 1; the template counts the cover.
+  \setcounter{page}{2}%
+}
+
+% Running head and foot, as the template carries them on every page but the
+% title: the document name and version ranged right at the top, the
+% confidentiality marking and the page number at the foot. Both come from the
+% Word template's header/footer parts and are reproduced rather than invented.
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\footnotesize\textbf{ARCHITECTURE VISION}\\[-2pt]\scriptsize Version 0.1}
+\fancyfoot[L]{\footnotesize SoftServe Confidential}
+\fancyfoot[R]{\footnotesize\textbf{\thepage}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{24pt}
+% \chapter and \section* (the contents page) switch to `plain` on their own, so
+% it has to carry the same header and footer or those pages would lose them.
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyhead[R]{\footnotesize\textbf{ARCHITECTURE VISION}\\[-2pt]\scriptsize Version 0.1}%
+  \fancyfoot[L]{\footnotesize SoftServe Confidential}%
+  \fancyfoot[R]{\footnotesize\textbf{\thepage}}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+% Block paragraphs, as in the Word template: no first-line indent, so the gap
+% between paragraphs is the only thing separating them and cannot be 0 — pandoc
+% leaves parindent at 0pt and would otherwise run two paragraphs together. 6pt
+% is the template's Normal style, w:spacing w:after="120" twips.
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\renewcommand{\arraystretch}{1.3}
+
+% Hyphenation off, as in the lab template.
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+
+% Ragged right, which is what the Word template's Normal style does: Word only
+% justifies when told to, and this one is not. Without it LaTeX justifies, and
+% with hyphenation off above all the slack lands in the interword spaces --
+% visibly looser lines than the original, and a different line count per
+% paragraph, which is half of why the pagination drifted. \raggedright has to
+% be deferred: pandoc's template and the geometry/setspace setup both touch the
+% paragraph shape after header-includes is read.
+\AtBeginDocument{\raggedright}
+
+% Every link in this document is an internal cross-reference, and pandoc sets
+% linkcolor=black for those -- so without this they are typeset exactly like the
+% surrounding prose and nothing on the page says "Business Case" is clickable.
+% Underlining rather than colouring keeps the body a single colour, as the Word
+% template's is, and survives printing.
+%
+% The kernel's \underline, not ulem's \uline: ulem is not in this TeX Live
+% installation, and the document builds everywhere without it. The cost is that
+% \underline boxes its argument, so an underlined cross-reference cannot break
+% across a line -- with the ragged right margin set above a long one wraps whole
+% to the next line, which costs a little raggedness and never an overfull line.
+%
+% \hyperref is patched rather than hyperref's internal \Hy@colorlink, which
+% would have caught every link kind at once: the internal hook brackets the link
+% text with two separate macro calls, and \underline needs its argument as one
+% balanced group, so wrapping it there makes TeX scan past the closing brace
+% looking for an \egroup that only appears inside a macro body. Patching the
+% user-level command keeps the text an explicit argument. The two-argument
+% \hyperref{url}{category}{name}{text} form is left alone -- pandoc emits only
+% the \hyperref[label]{text} one for the Markdown cross-references this document
+% is built from, and \href and \url appear nowhere in it.
+%
+% The patch has to be deferred the same way \raggedright is, and for a stronger
+% reason: pandoc loads hyperref (through bookmark) after header-includes, so
+% \hyperref does not exist yet while this file is read.
+\makeatletter
+\def\MDR@hyperref@opt[#1]#2{\MDR@hyperref[#1]{\underline{#2}}}
+\AtBeginDocument{%
+  % \NewCommandCopy, not \let: \hyperref is robust, so what \let would copy is
+  % only the protection wrapper, whose body lives in a second control sequence
+  % that the \DeclareRobustCommand below overwrites as well -- the saved copy
+  % would then reach the new definition and recurse until LuaTeX wedges.
+  \NewCommandCopy\MDR@hyperref\hyperref
+  \DeclareRobustCommand\hyperref{%
+    \@ifnextchar[{\MDR@hyperref@opt}{\MDR@hyperref}}%
+}
+\makeatother
