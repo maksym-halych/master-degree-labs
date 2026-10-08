@@ -3,7 +3,8 @@
 # document. Consumed by ../scripts/render-md-report.sh via --metadata-file.
 # `title` exists only so pandoc emits \maketitle; header.tex overrides that
 # command and lays the cover out itself, so nothing here reaches the page. No
-# author or date: the cover is the lecturer's template reproduced as issued.
+# author or date either: the cover's project, client, version and date are set
+# in header.tex, beside the layout that prints them.
 title: ARCHITECTURE VISION
 lang: en-US
 

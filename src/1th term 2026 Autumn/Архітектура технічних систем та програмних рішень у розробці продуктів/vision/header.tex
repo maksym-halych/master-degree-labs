@@ -173,15 +173,23 @@
 \titlespacing{\paragraph}{0pt}{10pt}{4pt}
 
 % ---------------------------- Title page ----------------------------
-% The front page is fixed template furniture, not metadata, so it is written out
-% here rather than assembled by \maketitle from meta.yaml: the logo, the title
-% at 32pt (Title page1), the project and version block at 16pt and 14pt (Title
-% page2/3), and the date placeholder at 10pt grey (Title page date). It carries
-% no author — this is the lecturer's blank template reproduced as issued, and
-% the submitter's name belongs in the Revision History table, not on the cover.
-% \subtitle is neutralised for the same reason: pandoc emits it into the
+% The front page's layout is fixed template furniture, so it is written out here
+% rather than assembled by \maketitle from meta.yaml: the logo, the title at
+% 32pt (Title page1), the project and version block at 16pt and 14pt (Title
+% page2/3), and the date at 10pt grey (Title page date). The four values the
+% template leaves as placeholders are set once below; the version also feeds the
+% running head, so a new revision changes one line. The cover carries no author,
+% as the template has none: the submitter's name belongs in the Revision History
+% table. \subtitle is neutralised for the same reason: pandoc emits it into the
 % preamble whenever meta.yaml defines one, and it must not reach \@title.
 \newcommand{\subtitle}[1]{}
+\newcommand{\avproject}{eDiscovery and Litigation Document Review Platform}
+% The business case never names the firm, so the cover describes it instead of
+% inventing a name.
+\newcommand{\avclient}{International Law Firm}
+\newcommand{\avversion}{0.1}
+% mm/dd/yyyy, the format of the template's own placeholder.
+\newcommand{\avdate}{10/09/2026}
 \renewcommand{\maketitle}{%
   \begin{titlepage}%
     \thispagestyle{empty}%
@@ -190,15 +198,15 @@
     \vspace*{66mm}%
     \par\noindent{\fontsize{32}{38.4}\selectfont ARCHITECTURE VISION}%
     \vspace*{12mm}%
-    \par\noindent{\fontsize{16}{19.2}\selectfont \textless Project\textgreater}%
+    \par\noindent{\fontsize{16}{19.2}\selectfont \avproject}%
     \vspace*{8mm}%
-    \par\noindent{\fontsize{14}{16.8}\selectfont Version 0.1}%
+    \par\noindent{\fontsize{14}{16.8}\selectfont Version \avversion}%
     \vspace*{4mm}%
     \par\noindent{\fontsize{14}{16.8}\selectfont For}%
     \vspace*{4mm}%
-    \par\noindent{\fontsize{14}{16.8}\selectfont \textless CLIENT\textgreater}%
+    \par\noindent{\fontsize{14}{16.8}\selectfont \avclient}%
     \vfill
-    \par\noindent{\fontsize{10}{12}\selectfont\color{black!55}[mm/dd/yyyy]}%
+    \par\noindent{\fontsize{10}{12}\selectfont\color{black!55}\avdate}%
     \vspace*{4mm}%
   \end{titlepage}%
   % The titlepage environment resets the counter to 1, which would put Contents
@@ -213,7 +221,7 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[R]{\footnotesize\textbf{ARCHITECTURE VISION}\\[-2pt]\scriptsize Version 0.1}
+\fancyhead[R]{\footnotesize\textbf{ARCHITECTURE VISION}\\[-2pt]\scriptsize Version \avversion}
 \fancyfoot[L]{\footnotesize SoftServe Confidential}
 \fancyfoot[R]{\footnotesize\textbf{\thepage}}
 \renewcommand{\headrulewidth}{0pt}
@@ -223,7 +231,7 @@
 % it has to carry the same header and footer or those pages would lose them.
 \fancypagestyle{plain}{%
   \fancyhf{}%
-  \fancyhead[R]{\footnotesize\textbf{ARCHITECTURE VISION}\\[-2pt]\scriptsize Version 0.1}%
+  \fancyhead[R]{\footnotesize\textbf{ARCHITECTURE VISION}\\[-2pt]\scriptsize Version \avversion}%
   \fancyfoot[L]{\footnotesize SoftServe Confidential}%
   \fancyfoot[R]{\footnotesize\textbf{\thepage}}%
   \renewcommand{\headrulewidth}{0pt}%
