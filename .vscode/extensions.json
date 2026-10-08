@@ -1,0 +1,49 @@
+{
+    "recommendations": [
+        // Python
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "ms-python.vscode-python-envs",
+        "charliermarsh.ruff",
+        "kevinrose.vsc-python-indent",
+
+        // Git / GitHub
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
+
+        // Remote / containers
+        "ms-vscode-remote.remote-ssh",
+        "ms-vscode-remote.remote-ssh-edit",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode.remote-explorer",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+
+        // Markdown
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint",
+        "shd101wyy.markdown-preview-enhanced",
+        "bierner.markdown-mermaid",
+        "yzane.markdown-pdf",
+
+        // LaTeX
+        "james-yu.latex-workshop",
+
+        // Config and data formats
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "mikestead.dotenv",
+        "ms-vscode.makefile-tools",
+        "mechatroner.rainbow-csv",
+        "janisdd.vscode-edit-csv",
+
+        // Spell checking
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-ukrainian",
+
+        // Other
+        "sukumo28.wav-preview",
+        "vscode-icons-team.vscode-icons"
+    ]
+}
