@@ -1,0 +1,4 @@
+{
+    // Reports render only through `make render-report`: a bare latexmk build fails on fontspec and litters the lab directory with aux files
+    "latex-workshop.latex.autoBuild.run": "never"
+}
