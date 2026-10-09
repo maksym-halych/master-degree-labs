@@ -1,0 +1,46 @@
+@startuml business-view
+' Business view for section 3.1: who uses the platform, which systems it
+' exchanges data with, and what flows between them. Business level only: cloud
+' services and protocols belong to the C4 context view in section 4.1.1.
+'
+' Noto Sans because the document's Open Sans is visible to LuaLaTeX only, not to
+' fontconfig; Noto Sans derives from Open Sans and both Java (which measures the
+' labels) and rsvg-convert (which draws them) find it, so the boxes fit the text.
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName "Noto Sans"
+skinparam defaultFontSize 12
+skinparam arrowFontSize 11
+skinparam rectangleRoundCorner 0
+
+rectangle "Law firm" {
+  actor "Partners" as partners
+  actor "Review team" as reviewers
+  actor "eDiscovery\nanalysts" as analysts
+
+  rectangle "**eDiscovery and Litigation**\n**Document Review Platform**" as platform #DDDDDD
+
+  rectangle "Firm systems\n(matter intake, billing,\niManage Work, Microsoft 365)" as systems
+}
+
+rectangle "Firm's clients" {
+  actor "Custodians" as custodians
+  rectangle "Client data\nsources" as sources
+}
+
+rectangle "Third parties" {
+  actor "Opposing parties\nand courts" as courts
+  rectangle "External hosting\nvendors" as vendors
+}
+
+partners --> platform : Monitor cost\nand progress
+reviewers --> platform : Review documents
+analysts --> platform : Place legal holds
+platform <-down-> systems : Matters, documents,\ncost data
+
+platform <-left-> custodians : Legal holds
+sources -right-> platform : Custodian data
+
+platform -right-> courts : Productions
+vendors -left-> platform : Historical matters
+@enduml

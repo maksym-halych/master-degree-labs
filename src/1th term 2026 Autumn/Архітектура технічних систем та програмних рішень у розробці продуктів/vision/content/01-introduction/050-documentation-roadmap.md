@@ -6,7 +6,7 @@ This section guides into the Architecture Vision document structure to help find
     - [Key Decisions](#key-decisions) about the architectural and operational choices made for the solution
     - [Key Risks and Open Issues](#key-risks-and-open-issues) detected with the analysis of the available context, requirements, and proposed decisions
 - [Architectural Drivers](#architectural-drivers) elicits the known essential requirements and constraints for the solution to design which play key role in forming architectural decisions and overall architecture.
-    - [Business Case](#business-case) describes the solution from the business standpoint including major features
+    - [Business Case](#business-case) describes the solution from the business standpoint including business goals and objectives, and major features
     - Service Level Agreement defines the important technical constraints and guarantees under which the solution will be serviced to its clients
     - [Use Case Model](#use-case-model) lists the key Use Cases for the designed solution
     - Domain Model shows the key business entities with attributes and relationships between them.
