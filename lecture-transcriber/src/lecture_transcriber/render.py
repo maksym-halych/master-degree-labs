@@ -161,13 +161,17 @@ def _common_fields(
         "asr_model": "parakeet-tdt-0.6b-v3",
         "summary_model": settings_model,
         "pipeline_revision": pipeline_revision(),
-        # Below 1.0 means the ASR server returned no speech for part of the audio.
-        "transcript_coverage": round(
-            transcript.covered_seconds / transcript.duration
-            if transcript.duration
-            else 0.0,
-            3,
-        ),
+        # Below 1.0 means the ASR server returned no speech for part of the audio
+        # it was sent; skipped silence was never sent, so it does not count.
+        "transcript_coverage": round(transcript.coverage, 3),
+        "skipped_silence": None
+        if transcript.skipped_seconds is None
+        else _format_timestamp(transcript.skipped_seconds),
+        # Coverage cannot see a chunk the server garbled into a few stray words,
+        # which still come back as a segment spanning it; a value near zero here can.
+        "min_chunk_density": None
+        if transcript.min_chunk_density is None
+        else round(transcript.min_chunk_density, 2),
     }
 
 

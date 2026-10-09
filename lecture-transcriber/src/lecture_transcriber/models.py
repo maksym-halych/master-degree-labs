@@ -27,6 +27,26 @@ class Segment:
         return Segment(start=self.start + offset, end=self.end + offset, text=self.text)
 
 
+def _optional_float(value: object) -> float | None:
+    """
+    Read a number that a transcript file may lack.
+
+    Args:
+        value: The raw JSON value, possibly None.
+
+    Returns:
+        The value as a float, or None when absent.
+
+    Raises:
+        TypeError: If the value is neither a number nor None.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, int | float):
+        raise TypeError(f"expected a number, got {value!r}")
+    return float(value)
+
+
 @dataclass(frozen=True, slots=True)
 class Transcript:
     """A complete lecture transcript with segment-level timings."""
@@ -34,6 +54,13 @@ class Transcript:
     language: str
     duration: float
     segments: tuple[Segment, ...]
+    # The two fields below are None in a transcript cached before they were
+    # recorded, where the value is unknown rather than zero.
+    # Long silence left out of every request to the ASR server.
+    skipped_seconds: float | None = None
+    # The lowest characters per second of audio across the chunks long enough to
+    # judge; also None when no chunk was.
+    min_chunk_density: float | None = None
 
     @property
     def text(self) -> str:
@@ -47,6 +74,17 @@ class Transcript:
         """Total audio duration actually accounted for by segments."""
         return sum(segment.end - segment.start for segment in self.segments)
 
+    @property
+    def coverage(self) -> float:
+        """
+        Share of the audio sent to the ASR server that came back as segments.
+
+        Skipped silence is left out of the denominator: it was never sent, so it
+        cannot have been dropped.
+        """
+        sent = self.duration - (self.skipped_seconds or 0.0)
+        return self.covered_seconds / sent if sent > 0 else 0.0
+
     def to_json(self, path: Path) -> None:
         """
         Persist the transcript so a later stage can never force a re-transcription.
@@ -58,6 +96,8 @@ class Transcript:
         payload = {
             "language": self.language,
             "duration": self.duration,
+            "skipped_seconds": self.skipped_seconds,
+            "min_chunk_density": self.min_chunk_density,
             "segments": [
                 {"start": s.start, "end": s.end, "text": s.text} for s in self.segments
             ],
@@ -92,6 +132,8 @@ class Transcript:
                     )
                     for s in payload["segments"]
                 ),
+                skipped_seconds=_optional_float(payload.get("skipped_seconds")),
+                min_chunk_density=_optional_float(payload.get("min_chunk_density")),
             )
         except (json.JSONDecodeError, KeyError, TypeError) as exc:
             raise ValueError(f"{path} is not a valid transcript file") from exc
