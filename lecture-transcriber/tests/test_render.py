@@ -152,6 +152,34 @@ def test_coverage_is_recorded_so_bad_runs_are_visible(tmp_path: Path) -> None:
     assert yaml.safe_load(block)["transcript_coverage"] == pytest.approx(0.876)
 
 
+def test_silence_skipping_and_chunk_density_are_recorded(tmp_path: Path) -> None:
+    """A garbled chunk shows as a density near zero, which coverage cannot reveal."""
+    transcript = Transcript(
+        language="uk",
+        duration=5016.0,
+        segments=(Segment(186.3, 5016.0, "Добрий ранок."),),
+        skipped_seconds=186.3,
+        min_chunk_density=3.714,
+    )
+    summary_path, _ = write_artifacts(
+        "# x\n", transcript, _source(), tmp_path / "docs", "claude-opus-4-8"
+    )
+    meta = yaml.safe_load(summary_path.read_text(encoding="utf-8").split("---")[1])
+    assert meta["transcript_coverage"] == pytest.approx(1.0)
+    assert meta["skipped_silence"] == "00:03:06"
+    assert meta["min_chunk_density"] == pytest.approx(3.71)
+
+
+def test_metrics_unknown_for_an_older_transcript_are_omitted(tmp_path: Path) -> None:
+    """A transcript cached before the metrics must not claim zero skipped silence."""
+    summary_path, _ = write_artifacts(
+        "# x\n", _transcript(), _source(), tmp_path / "docs", "claude-opus-4-8"
+    )
+    meta = yaml.safe_load(summary_path.read_text(encoding="utf-8").split("---")[1])
+    assert "skipped_silence" not in meta
+    assert "min_chunk_density" not in meta
+
+
 def test_transcript_segments_are_timestamped_and_separated(tmp_path: Path) -> None:
     """Each segment is its own paragraph so re-runs produce line-oriented diffs."""
     _, transcript_path = write_artifacts(
