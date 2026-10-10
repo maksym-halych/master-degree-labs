@@ -1,0 +1,26 @@
+[project]
+name = "mk1"
+version = "0.1.0"
+description = "Modeling methodology labs: EDA, preprocessing and augmentation of tabular data"
+requires-python = ">=3.14"
+dependencies = [
+    "imbalanced-learn>=0.14.2",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.3",
+    "pandas>=3.0.6",
+    "pillow>=12.3.0",
+    "scikit-learn>=1.9.1",
+    "scipy>=1.18.1",
+    "seaborn>=0.13.2",
+]
+
+# Makes the mk1 package installable, so lab*/run.py imports `from mk1...` from
+# any directory without touching sys.path. uv installs it in editable mode, so
+# __file__ stays inside the source tree — mk1/config.py derives every artifact
+# path from it.
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mk1"]
