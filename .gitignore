@@ -13,6 +13,9 @@ google_token.json
 # Per-run logs. Useful locally, never worth committing.
 logs/
 
+# Local scratch notes, such as research lists. Never part of a deliverable.
+ignore/
+
 # Python
 __pycache__/
 *.py[cod]
