@@ -38,3 +38,4 @@ DATASETS = REPO_ROOT / ".cache" / "datasets" / SUBJECT_PATH
 LOGS = REPO_ROOT / "logs" / SUBJECT_PATH
 
 LAB1 = ARTIFACTS / "lab1"
+LAB2 = ARTIFACTS / "lab2"
