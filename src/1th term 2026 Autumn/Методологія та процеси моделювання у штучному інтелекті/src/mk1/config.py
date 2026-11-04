@@ -9,6 +9,11 @@ SEED = 42
 TEST_SIZE = 0.20
 CV_FOLDS = 5
 
+# Folds of every hyperparameter search, which is also the inner loop of nested
+# cross-validation; its outer loop is CV_FOLDS. Both counts are set by the lab 3
+# assignment.
+INNER_FOLDS = 3
+
 # Shapiro-Wilk p-values are unreliable above 5000 observations (scipy warns),
 # so the test runs on a random subsample of this size.
 SHAPIRO_SAMPLE = 5000
@@ -39,3 +44,4 @@ LOGS = REPO_ROOT / "logs" / SUBJECT_PATH
 
 LAB1 = ARTIFACTS / "lab1"
 LAB2 = ARTIFACTS / "lab2"
+LAB3 = ARTIFACTS / "lab3"
