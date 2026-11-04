@@ -15,6 +15,7 @@ Figure text stays in Ukrainian: it is report content.
 import json
 import logging
 import time
+from collections.abc import Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -128,7 +129,12 @@ def nested_cv(method: Method, X: pd.DataFrame, y: pd.Series) -> dict:
 
 
 def run_nested(X_train: pd.DataFrame, y_train: pd.Series) -> None:
-    """Runs nested CV of every strategy; writes nested.json and a figure."""
+    """
+    Runs nested CV of every strategy; writes nested.json.
+
+    Its figure is drawn by run_summary(), which also has the untuned model on
+    the same folds that the figure is read against.
+    """
     results: dict[str, dict] = {}
     for method in METHODS:
         started = time.perf_counter()
@@ -145,7 +151,6 @@ def run_nested(X_train: pd.DataFrame, y_train: pd.Series) -> None:
             result["optimism"],
             result["wall_seconds"],
         )
-    plot_nested(results)
     save_json(
         {
             "outer_folds": CV_FOLDS,
@@ -157,64 +162,114 @@ def run_nested(X_train: pd.DataFrame, y_train: pd.Series) -> None:
     )
 
 
-def plot_nested(results: dict[str, dict]) -> None:
-    """Inner against outer PR-AUC per strategy: fold means as bars, folds as dots."""
-    fig, ax = plt.subplots(figsize=(11, 5.5))
-    x = np.arange(len(METHODS))
+def paired_bars(
+    ax: plt.Axes,
+    results: dict[str, dict],
+    inner: Callable[[int, dict], float],
+    outer: Callable[[int, dict], float],
+) -> None:
+    """
+    Inner against outer bars per strategy, with each outer fold's pair joined.
+
+    Args:
+        ax: Axes to draw on.
+        results: nested.json results, by strategy key.
+        inner: Value drawn for a fold's inner score, given the fold's index.
+        outer: Value drawn for a fold's outer score, given the fold's index.
+    """
     width = 0.36
     for i, method in enumerate(METHODS):
-        r = results[method.key]
-        for offset, key, hatch in (
-            (-width / 2, "inner", "//"),
-            (width / 2, "outer", None),
+        folds = results[method.key]["folds"]
+        pairs = [(inner(k, f), outer(k, f)) for k, f in enumerate(folds)]
+        for offset, values, hatch, alpha in (
+            (-width / 2, [a for a, _ in pairs], "//", 0.45),
+            (width / 2, [b for _, b in pairs], None, 0.9),
         ):
             ax.bar(
                 i + offset,
-                r[f"{key}_mean"],
+                np.mean(values),
                 width,
-                yerr=r[f"{key}_std"],
+                yerr=np.std(values, ddof=1),
                 capsize=3,
                 color=method.color,
-                alpha=0.45 if key == "inner" else 0.9,
+                alpha=alpha,
                 hatch=hatch,
                 edgecolor="black",
                 linewidth=0.5,
             )
-        # Each outer fold's pair of scores, joined: the slope is that fold's optimism.
-        for f in r["folds"]:
+        # The slope of each line is that fold's change from inner to outer.
+        for a, b in pairs:
             ax.plot(
                 [i - width / 2, i + width / 2],
-                [f["inner"], f["outer"]],
+                [a, b],
                 color="black",
                 alpha=0.35,
                 lw=0.8,
                 marker="o",
                 markersize=3,
             )
-    ax.set_xticks(x, [m.label for m in METHODS], fontsize=9)
-    ax.set_ylabel("PR-AUC")
-    low = min(min(f["outer"] for f in r["folds"]) for r in results.values())
-    high = max(max(f["inner"] for f in r["folds"]) for r in results.values())
-    ax.set_ylim(low - 0.01, high + 0.008)
+    ax.set_xticks(np.arange(len(METHODS)), [m.label for m in METHODS], fontsize=8)
     ax.grid(axis="y", alpha=0.3)
+
+
+def plot_nested(results: dict[str, dict], reference: dict) -> None:
+    """
+    Nested CV per strategy: raw scores on the left, gains over the untuned model on the right.
+
+    Args:
+        results: nested.json results, by strategy key.
+        reference: The untuned model on the same folds, from baseline_nested().
+    """
+    ref = reference["folds"]
+    fig, (raw, gain) = plt.subplots(1, 2, figsize=(17, 6))
+
+    paired_bars(raw, results, lambda k, f: f["inner"], lambda k, f: f["outer"])
+    raw.axhline(reference["inner_mean"], color="black", ls=":", lw=1.2)
+    raw.axhline(reference["outer_mean"], color="black", ls="--", lw=1.2)
+    scores = [
+        v
+        for r in results.values()
+        for f in r["folds"]
+        for v in (f["inner"], f["outer"])
+    ]
+    raw.set_ylim(min(scores + [reference["inner_mean"]]) - 0.006, max(scores) + 0.004)
+    raw.set_ylabel("PR-AUC")
+    raw.set_title("Оцінки на внутрішніх і зовнішніх блоках", fontsize=11)
+
+    paired_bars(
+        gain,
+        results,
+        lambda k, f: f["inner"] - ref[k]["inner"],
+        lambda k, f: f["outer"] - ref[k]["outer"],
+    )
+    gain.axhline(0, color="black", lw=1)
+    gain.set_ylabel("Приріст PR-AUC відносно моделі без оптимізації")
+    gain.set_title("Приріст на тих самих блоках", fontsize=11)
+
     handles = [
         plt.Rectangle(
             (0, 0), 1, 1, facecolor="lightgrey", hatch="//", edgecolor="black"
         ),
         plt.Rectangle((0, 0), 1, 1, facecolor="grey", edgecolor="black"),
         Line2D([], [], color="black", alpha=0.5, marker="o", markersize=3),
+        Line2D([], [], color="black", ls=":", lw=1.2),
+        Line2D([], [], color="black", ls="--", lw=1.2),
     ]
-    ax.legend(
+    fig.legend(
         handles,
         [
             "найкраща оцінка внутрішньої CV",
             "незміщена оцінка зовнішньої CV",
             "окремий зовнішній блок",
+            "без оптимізації: внутрішні блоки",
+            "без оптимізації: зовнішні блоки",
         ],
-        loc="lower left",
+        loc="lower center",
+        ncol=5,
         fontsize=9,
+        bbox_to_anchor=(0.5, -0.04),
     )
-    ax.set_title("Вкладена крос-валідація: 5 зовнішніх × 3 внутрішні блоки")
+    fig.suptitle("Вкладена крос-валідація: 5 зовнішніх × 3 внутрішні блоки")
     save_figure(fig, LAB3 / "nested_folds.png")
 
 
@@ -232,7 +287,7 @@ def run_summary(
     measured against the untuned model on the same folds (baseline_nested),
     since the fold scheme alone moves the score. The test part is touched
     here once per strategy, after every choice has already been made, and
-    chooses nothing. Writes summary.json and a figure.
+    chooses nothing. Writes summary.json and two figures.
     """
     baseline = json.loads(BASELINE_JSON.read_text(encoding="utf-8"))
     tuning = json.loads(TUNING_JSON.read_text(encoding="utf-8"))["results"]
@@ -285,6 +340,7 @@ def run_summary(
             row["test"]["pr_auc"],
             row["test"]["roc_auc"],
         )
+    plot_nested(nested, reference)
     plot_quality_time(rows)
     save_json({"rows": rows, "baseline_nested": reference}, SUMMARY_JSON)
 
@@ -363,6 +419,10 @@ def plot_quality_time(rows: dict[str, dict]) -> None:
         )
         ax.plot([t, t], [row["nested"], row["inner"]], color=color, lw=0.8, ls=":")
     ax.set_xscale("log")
+    # Plain seconds at round values: the default log labels read 2×10¹, 3×10¹...
+    ax.minorticks_off()
+    ticks = [10, 20, 50, 100, 200, 500, 1000]
+    ax.set_xticks(ticks, [str(t) for t in ticks])
     ax.set_xlabel("Час пошуку на всій навчальній вибірці, с (лог. шкала)")
     ax.set_ylabel("PR-AUC")
     ax.set_title("Якість моделі залежно від часу обчислень")

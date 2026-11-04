@@ -75,11 +75,14 @@ def main() -> int:
         ),
         "nested": (
             lambda: run_nested(X_train, y_train),
-            tuple(LAB3 / f for f in ("nested_folds.png", "nested.json")),
+            (LAB3 / "nested.json",),
         ),
         "summary": (
             lambda: run_summary(X_train, X_test, y_train, y_test),
-            tuple(LAB3 / f for f in ("quality_time.png", "summary.json")),
+            tuple(
+                LAB3 / f
+                for f in ("nested_folds.png", "quality_time.png", "summary.json")
+            ),
         ),
     }
 
