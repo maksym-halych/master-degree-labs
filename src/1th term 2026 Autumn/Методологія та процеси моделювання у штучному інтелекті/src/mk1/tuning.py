@@ -519,6 +519,8 @@ def plot_space(results: dict[str, dict]) -> None:
         ax.set_xlabel("learning_rate")
         ax.grid(alpha=0.3)
     axes[0].set_ylabel("max_leaf_nodes")
-    axes[0].legend(loc="upper right", fontsize=8)
+    # The Bayesian panel's top right corner stays empty: TPE leaves the large,
+    # fast-learning trees early. The grid's corner holds one of its points.
+    axes[-1].legend(loc="upper right", fontsize=8)
     fig.colorbar(points, ax=axes, label="PR-AUC на внутрішній CV", shrink=0.9)
     save_figure(fig, LAB3 / "tuning_space.png")
