@@ -1,0 +1,47 @@
+@startuml use-cases-collection
+' Use case view for section 3.2.1: matter registration, legal hold, collection
+' and processing. People and systems that start a use case stay on the left, and
+' the ones that only take part in it stay on the right.
+'
+' Noto Sans for the reason given in business-view.puml.
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName "Noto Sans"
+skinparam defaultFontSize 12
+skinparam rectangleRoundCorner 0
+left to right direction
+
+rectangle "Matter-intake and\nconflicts system" as intake <<system>>
+actor "eDiscovery\nanalyst" as analyst
+actor "Review\nmanager" as manager
+
+rectangle "eDiscovery and Litigation Document Review Platform" {
+  usecase "UC-1\nRegister a matter" as uc1
+  usecase "UC-2\nIssue a legal hold" as uc2
+  usecase "UC-3\nAcknowledge a legal hold" as uc3
+  usecase "UC-4\nTrack acknowledgements" as uc4
+  usecase "UC-5\nCollect custodian data" as uc5
+  usecase "UC-6\nImport data in bulk" as uc6
+  usecase "UC-7\nProcess collected data" as uc7
+  usecase "UC-8\nAssess a matter early" as uc8
+}
+
+actor "Custodian" as custodian
+rectangle "Microsoft 365\nand Purview" as m365 <<system>>
+rectangle "iManage Work" as imanage <<system>>
+
+intake -- uc1
+analyst -- uc2
+analyst -- uc4
+analyst -- uc5
+analyst -- uc6
+analyst -- uc7
+analyst -- uc8
+manager -- uc8
+
+uc2 -- custodian
+uc3 -- custodian
+uc2 -- m365
+uc5 -- m365
+uc5 -- imanage
+@enduml

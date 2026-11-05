@@ -1,0 +1,36 @@
+@startuml use-cases-monitoring
+' Use case view for section 3.2.1: dashboards, cost export and client reporting.
+' The platform itself starts the cost export, so UC-22 has no actor on the left.
+'
+' Noto Sans for the reason given in business-view.puml.
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName "Noto Sans"
+skinparam defaultFontSize 12
+skinparam rectangleRoundCorner 0
+left to right direction
+
+actor "Litigation\npartner" as partner
+actor "eDiscovery\nanalyst" as analyst
+actor "Review\nmanager" as manager
+actor "Client\ncounsel" as counsel
+
+rectangle "eDiscovery and Litigation Document Review Platform" {
+  usecase "UC-21\nMonitor matter cost\nand progress" as uc21
+  usecase "UC-22\nExport cost data" as uc22
+  usecase "UC-23\nMonitor capacity\nand throughput" as uc23
+  usecase "UC-24\nView client reports" as uc24
+  usecase "UC-25\nExamine communication maps" as uc25
+}
+
+rectangle "Practice-management\nand billing system" as billing <<system>>
+
+partner -- uc21
+partner -- uc25
+analyst -- uc23
+analyst -- uc25
+manager -- uc23
+counsel -- uc24
+
+uc22 -- billing
+@enduml

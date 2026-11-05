@@ -1,0 +1,44 @@
+@startuml use-cases-review
+' Use case view for section 3.2.1: review, privilege, production and migration.
+' People who start a use case stay on the left, and the parties that only take
+' part in it stay on the right.
+'
+' Noto Sans for the reason given in business-view.puml.
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName "Noto Sans"
+skinparam defaultFontSize 12
+skinparam rectangleRoundCorner 0
+left to right direction
+
+actor "Review\nmanager" as manager
+actor "Contract\nreviewer" as reviewer
+actor "eDiscovery\nanalyst" as analyst
+
+rectangle "eDiscovery and Litigation Document Review Platform" {
+  usecase "UC-9\nSet up a review" as uc9
+  usecase "UC-10\nReview documents" as uc10
+  usecase "UC-11\nValidate TAR results" as uc11
+  usecase "UC-12\nDecide on privilege" as uc12
+  usecase "UC-13\nRedact documents" as uc13
+  usecase "UC-14\nProduce documents" as uc14
+  usecase "UC-15\nMigrate a historical matter" as uc15
+}
+
+actor "Opposing party\nor court" as courts
+rectangle "iManage Work" as imanage <<system>>
+actor "External hosting\nvendor" as vendor
+
+manager -- uc9
+manager -- uc11
+manager -- uc12
+reviewer -- uc10
+reviewer -- uc12
+reviewer -- uc13
+analyst -- uc14
+analyst -- uc15
+
+uc14 -- courts
+uc14 -- imanage
+uc15 -- vendor
+@enduml
