@@ -35,6 +35,13 @@ Before finalizing code, check for: type safety, error handling, edge cases.
 - Reports embed their sources with `\inputminted[firstline=,lastline=]`, so **editing a lab module shifts the line ranges in `main.tex`** — a stale range silently prints the wrong lines, or cuts a listing mid-expression. After changing a module, re-derive every range that points at it, rebuild the PDF, and read the rendered listing to confirm it starts and ends on a complete statement
 - **Render a report only through `make render-report`** — never by calling `latexmk` in a lab's directory, and turn off any build-on-save in the editor's LaTeX plugin. The target carries three arguments that exist nowhere else: `-lualatex`, because under pdfLaTeX `fontspec` is a fatal error and the listings package cannot read the Cyrillic in the sources; `-outdir=build`, because `build/` is the one gitignored place for LaTeX scratch; and `-jobname=lab<N>`, which names the PDF after the lab. A bare `latexmk main.tex` loses all three at once: it fails on `fontspec`, and still leaves `main.aux`, `main.log`, `main.fls` and `main.fdb_latexmk` beside `main.tex`, outside `build/` and tracked. There is no `.latexmkrc` anywhere in the repository to fall back on, by design — the `Makefile` is the single place these flags live
 
+## Task Tracking
+
+- Tasks for this repository live in Linear: workspace `maksym-24`, team `Maksym` (issue prefix `MAK`), project `master-degree-labs`. Use the Linear MCP tools to read and update them
+- "Next task" means the highest-priority issue in `Todo` in that project; ideas waiting for triage sit in `Backlog` and are not picked up unless asked
+- When starting an issue, move it to `In Progress`; when finished, leave a comment summarising what changed (commits, files, anything left open) and move it to `Done`
+- New ideas that come up mid-task go into the same project as new `Backlog` issues rather than being done on the side
+
 ## Coding Conventions
 
 - Absolute imports by package name only — `from lecture_transcriber.audio import extract_audio`, never `from .audio import ...` or `from . import audio`
