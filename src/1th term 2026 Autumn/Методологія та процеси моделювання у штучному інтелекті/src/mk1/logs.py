@@ -51,5 +51,19 @@ def configure_logging(lab: str) -> Path:
     # too (the categorical-units fallback, once per bar chart drawn on purpose).
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
     logging.getLogger("PIL").setLevel(logging.WARNING)
+    # The weight downloads of lab 4 go through the Hugging Face hub, whose HTTP
+    # stack logs response headers at DEBUG, and one of them is a download token
+    # that must not reach disk. huggingface_hub ships forks of httpx and httpcore
+    # under the names with a 2; the originals are capped too, should it switch back.
+    for name in (
+        "urllib3",
+        "httpx",
+        "httpx2",
+        "httpcore",
+        "httpcore2",
+        "huggingface_hub",
+        "filelock",
+    ):
+        logging.getLogger(name).setLevel(logging.WARNING)
 
     return log_file

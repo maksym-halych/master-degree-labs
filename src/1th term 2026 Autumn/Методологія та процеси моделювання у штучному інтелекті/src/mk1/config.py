@@ -45,3 +45,9 @@ LOGS = REPO_ROOT / "logs" / SUBJECT_PATH
 LAB1 = ARTIFACTS / "lab1"
 LAB2 = ARTIFACTS / "lab2"
 LAB3 = ARTIFACTS / "lab3"
+LAB4 = ARTIFACTS / "lab4"
+
+# Pretrained backbone weights, which timm fetches through the Hugging Face hub.
+# They belong to no subject, so they sit in the workspace's shared model cache
+# beside the transcriber's ASR weights rather than in ~/.cache.
+WEIGHTS = REPO_ROOT / ".cache" / "models" / "hf-hub"
