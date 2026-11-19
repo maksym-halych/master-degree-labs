@@ -69,3 +69,47 @@ def all_models(input_dim: int) -> dict[str, tuple[nn.Module, float]]:
             L2_LAMBDA,
         )
     return models
+
+
+def build_mlp(
+    input_dim: int,
+    hidden: tuple[int, ...],
+    activation: str,
+    dropout: float,
+    batch_norm: bool,
+) -> nn.Module:
+    """
+    Build a feedforward network of any depth from a set of hyperparameters (lab 3).
+
+    The lab 2 architectures are points of this family: baseline-relu is
+    hidden=(64, 32) with ReLU, no Dropout and no BatchNorm, and it is built
+    layer for layer the same, so the same seed gives it the same weights.
+
+    Args:
+        input_dim: Number of input features.
+        hidden: Width of every hidden layer, input side first.
+        activation: Name of the activation function, a key of _ACTIVATIONS.
+        dropout: Dropout rate after every hidden layer; 0 leaves Dropout out.
+        batch_norm: Whether to put BatchNorm1d before every activation.
+
+    Returns:
+        The untrained network.
+
+    Raises:
+        ValueError: If the activation function is unknown.
+    """
+    layers: list[nn.Module] = []
+    prev = input_dim
+
+    for units in hidden:
+        # The bias is redundant before BatchNorm: its own shift beta replaces it.
+        layers.append(nn.Linear(prev, units, bias=not batch_norm))
+        if batch_norm:
+            layers.append(nn.BatchNorm1d(units))
+        layers.append(_activation(activation))
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+        prev = units
+
+    layers.append(nn.Linear(prev, 1))
+    return nn.Sequential(*layers)
