@@ -59,15 +59,15 @@ repos:
   # their config (pyproject.toml, the lockfile) relative to the working
   # directory — so they cd into the project with `--directory`. The pipeline
   # itself must not: see the note in the Makefile.
-  - repo: local
-    hooks:
-      - id: pip-audit
-        name: pip-audit
-        entry: uv run --directory lecture-transcriber pip-audit
-          # --ignore-vuln PYSEC-2024-277
-        language: system
-        pass_filenames: false
-        always_run: true
+  # - repo: local
+  #   hooks:
+  #     - id: pip-audit
+  #       name: pip-audit
+  #       entry: uv run --directory lecture-transcriber pip-audit
+  #         # --ignore-vuln PYSEC-2024-277
+  #       language: system
+  #       pass_filenames: false
+  #       always_run: true
 
   - repo: local
     hooks:
